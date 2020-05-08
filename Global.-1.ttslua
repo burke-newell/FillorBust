@@ -122,6 +122,13 @@ function onObjectRandomize(die6, player_color)
     )
 end
 
+function onObjectEnterScriptingZone(scoringZone, enter_object)
+    local position = enter_object.getPosition()
+    position["x"] = position["x"] + 1.5
+    enter_object.setPositionSmooth(position, true, false)
+end
+
+
 function checkTriples()
     if die1.getValue() == die2.getValue() and die3.getValue() then
         print("match")
@@ -141,7 +148,7 @@ function moveScoringDie(die)
     scoringZonePosition = scoringZone.getPosition()
     scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
     die.setLock(true)
-    die.setPosition(scoringZonePosition)
+    die.setPositionSmooth(scoringZonePosition, true, false)
 end
 
 function translateScoringDice()
