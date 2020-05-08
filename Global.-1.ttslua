@@ -25,22 +25,22 @@ button1_parameters.height = 500
 button1_parameters.font_size = 100
 
 button2_parameters = {}
-button2_parameters.click_function = 'checkTriples'
+button2_parameters.click_function = 'printScoringDiceButton'
 button2_parameters.function_owner = nil
-button2_parameters.label = 'Check Triples'
+button2_parameters.label = 'Print Scoring Dice'
 button2_parameters.position = {0,0.8,0}
 button2_parameters.rotation = {0,0,0}
-button2_parameters.width = 700
+button2_parameters.width = 1000
 button2_parameters.height = 500
 button2_parameters.font_size = 100
 
 button3_parameters = {}
-button3_parameters.click_function = 'allDiceResting'
+button3_parameters.click_function = 'moveScoringDice'
 button3_parameters.function_owner = nil
-button3_parameters.label = 'Check Resting'
+button3_parameters.label = 'Move Scoring Dice'
 button3_parameters.position = {0,0.8,0}
 button3_parameters.rotation = {0,0,0}
-button3_parameters.width = 800
+button3_parameters.width = 1000
 button3_parameters.height = 500
 button3_parameters.font_size = 100
 
@@ -81,6 +81,7 @@ function onLoad()
 end
 
 function onObjectRandomize(die1, player_color)
+    clearScoringDice()
     Wait.condition(
         function() return scoreDie(die1) end,
         function() return allDiceResting() end
@@ -88,6 +89,7 @@ function onObjectRandomize(die1, player_color)
 end
 
 function onObjectRandomize(die2, player_color)
+    clearScoringDice()
     Wait.condition(
         function() return scoreDie(die2) end,
         function() return allDiceResting() end
@@ -95,6 +97,7 @@ function onObjectRandomize(die2, player_color)
 end
 
 function onObjectRandomize(die3, player_color)
+    clearScoringDice()
     Wait.condition(
         function() return scoreDie(die3) end,
         function() return allDiceResting() end
@@ -102,6 +105,7 @@ function onObjectRandomize(die3, player_color)
 end
 
 function onObjectRandomize(die4, player_color)
+    clearScoringDice()
     Wait.condition(
         function() return scoreDie(die4) end,
         function() return allDiceResting() end
@@ -109,6 +113,7 @@ function onObjectRandomize(die4, player_color)
 end
 
 function onObjectRandomize(die5, player_color)
+    clearScoringDice()
     Wait.condition(
         function() return scoreDie(die5) end,
         function() return allDiceResting() end
@@ -116,17 +121,21 @@ function onObjectRandomize(die5, player_color)
 end
 
 function onObjectRandomize(die6, player_color)
+    clearScoringDice()
     Wait.condition(
         function() return scoreDie(die6) end,
         function() return allDiceResting() end
     )
 end
 
+--[[
 function onObjectEnterScriptingZone(scoringZone, enter_object)
     local position = enter_object.getPosition()
     position["x"] = position["x"] + 1.5
     enter_object.setPositionSmooth(position, true, false)
 end
+]]--
+
 
 
 function checkTriples()
@@ -135,13 +144,43 @@ function checkTriples()
     end
 end
 
+scoringDice = {}
+
+function clearScoringDice()
+    for i in pairs (scoringDice) do
+        if i ~= nil then
+            scoringDice[i] = nil
+        end
+    end
+end
 
 function scoreDie(die)
     local value = die.getValue()
     if value == 1 or value == 5 then
-        translateScoringDice()
-        moveScoringDie(die)
+        table.insert(scoringDice, die.getGUID())
     end
+end
+
+function printScoringDiceButton()
+    Wait.time(moveScoringDice(), 5, #scoringDice)
+end
+
+function moveScoringDice()
+    length = #scoringDice
+    if scoringDice[length] ~= nil then
+        die = getObjectFromGUID(scoringDice[length])
+    end
+
+    local scoringZonePosition = scoringZone.getPosition()
+    scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
+    die.setLock(true)
+    die.setPositionSmooth(scoringZonePosition, true, false)
+
+    if length >= 1 then
+        translateScoringDice()
+        table.remove(scoringDice, length)
+    end
+    return moveScoringDice()
 end
 
 function moveScoringDie(die)
