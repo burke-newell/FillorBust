@@ -1,0 +1,143 @@
+checker1_GUID = 'a8c36b'
+checker2_GUID = '6d6e51'
+checker3_GUID = '420478'
+checker4_GUID = 'b85973'
+
+deck_GUID = 'ad183d'
+
+dice1_GUID = '197209'
+dice2_GUID = '5e540b'
+dice3_GUID = 'a9545a'
+dice4_GUID = '4fd345'
+dice5_GUID = 'ad5a9d'
+dice6_GUID = 'd04b38'
+
+rollingZone_GUID = '3fedb9'
+scoringZone_GUID = '9c0582'
+
+button1_parameters = {}
+button1_parameters.click_function = 'rollDice'
+button1_parameters.function_owner = nil
+button1_parameters.label = 'Roll Dice'
+button1_parameters.position = {0,0.8,0}
+button1_parameters.rotation = {0,0,0}
+button1_parameters.width = 500
+button1_parameters.height = 500
+button1_parameters.font_size = 100
+
+button2_parameters = {}
+button2_parameters.click_function = 'scoreStraight'
+button2_parameters.function_owner = nil
+button2_parameters.label = 'Score Straight'
+button2_parameters.position = {0,0.8,0}
+button2_parameters.rotation = {0,0,0}
+button2_parameters.width = 700
+button2_parameters.height = 500
+button2_parameters.font_size = 100
+
+button3_parameters = {}
+button3_parameters.click_function = 'sortDice'
+button3_parameters.function_owner = nil
+button3_parameters.label = 'Sort Dice'
+button3_parameters.position = {0,0.8,0}
+button3_parameters.rotation = {0,0,0}
+button3_parameters.width = 500
+button3_parameters.height = 500
+button3_parameters.font_size = 100
+
+button4_parameters = {}
+button4_parameters.click_function = 'scoreDice'
+button4_parameters.function_owner = nil
+button4_parameters.label = 'Score Dice'
+button4_parameters.position = {0,0.8,0}
+button4_parameters.rotation = {0,0,0}
+button4_parameters.width = 500
+button4_parameters.height = 500
+button4_parameters.font_size = 100
+
+function onLoad()
+    checker1 = getObjectFromGUID(checker1_GUID)
+    checker2 = getObjectFromGUID(checker2_GUID)
+    checker3 = getObjectFromGUID(checker3_GUID)
+    checker4 = getObjectFromGUID(checker4_GUID)
+
+    deck = getObjectFromGUID(deck_GUID)
+
+    rollingZone = getObjectFromGUID(rollingZone_GUID)
+    scoringZone = getObjectFromGUID(scoringZone_GUID)
+
+    dice1 = getObjectFromGUID(dice1_GUID)
+    dice2 = getObjectFromGUID(dice2_GUID)
+    dice3 = getObjectFromGUID(dice3_GUID)
+    dice4 = getObjectFromGUID(dice4_GUID)
+    dice5 = getObjectFromGUID(dice5_GUID)
+    dice6 = getObjectFromGUID(dice6_GUID)
+
+    dice = {dice1, dice2, dice3, dice4, dice5, dice6}
+
+    checker1.createButton(button1_parameters)
+    checker2.createButton(button2_parameters)
+    checker3.createButton(button3_parameters)
+    checker4.createButton(button4_parameters)
+
+end
+
+function resetDeck()
+    print('Reset Deck')
+    deck.reset()
+end
+
+function rollDice()
+    for i=1, 6 do
+        dice[i].roll()
+    end
+    local rollWatch = function() return
+        dice[1].resting and dice[2].resting and dice[3].resting
+            and dice[4].resting and dice[5].resting and dice[6].resting end
+    local rollEnd = function() sortDice() end
+
+    Wait.condition(rollEnd, rollWatch)
+end
+
+function sortDice()
+    unsortedDice = {}
+    for i=1, 6 do
+        table.insert(unsortedDice, dice[i].getValue())
+    end
+    sortedDice = table.sort(unsortedDice)
+    print(table.concat(sortedDice, ", "))
+end
+
+function scoreDice()
+    local object = rollingZone.getObjects()[1]
+    if object ~= nil then
+        object.setPositionSmooth(scoringZone.getPosition())
+    end
+end
+
+function scoreStraight()
+    if sortedDice[1] == 1 and sortedDice[2] == 2 and sortedDice[3] == 3
+        and sortedDice[4] == 4 and sortedDice[5] == 5 and sortedDice[6] == 6 then
+            score = 1500
+            print(score)
+        end
+end
+
+function onObjectEnterScriptingZone(scoringZone, enter_object)
+end
+
+function scoreTriples()
+    if sortedDice[1] and sortedDice[2] and sortedDice[3] == 1 then
+        score = 100
+    end
+end
+
+function checkFill()
+
+end
+
+function checkBust()
+    if sum == 0 then
+        print('Bust!')
+    end
+end

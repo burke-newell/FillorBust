@@ -1,0 +1,251 @@
+registeredDice = {}
+registeredDiceCount = 0
+trackedRolls = {}
+trackedRollCount = 0
+mostRecent = nil
+
+diceAreRolling = false
+showExpected = false
+expectedProb = {}
+
+function onUpdate()
+  if detectNewRoll() then
+    appendRoll()
+  end
+end
+
+
+function detectNewRoll()
+  local allAtRest = true
+  local dice = getDice()
+  local anyDice = false
+  for _, die in ipairs(dice) do
+    anyDice = true
+    allAtRest = allAtRest and die.resting
+  end
+  local diceSettled = allAtRest and anyDice
+  
+  local isNewRoll = false
+
+  if diceAreRolling and diceSettled then
+    log("New Roll Detected")
+    isNewRoll = true
+  end
+
+  if anyDice and (not diceSettled) then
+    -- log("Dice Are Rolling")
+    diceAreRolling = true
+  end
+
+  if allAtRest then
+    -- log("Dice Are Not Rolling")
+    diceAreRolling = false
+  end
+
+  return isNewRoll
+end
+
+function registerDice()
+  local allObjects = getAllObjects()
+  local msg = "Found Dice:\n---\n"
+  registeredDice = {}
+  local n = 0
+  for _, obj in ipairs(allObjects) do
+    if obj.tag == "Dice" then
+      local distance = findProximity(self.getPosition(), obj)
+      if distance < 10 then
+        msg = msg ..("Found a die: " .. obj.guid .. ", distance: " .. distance .."\n")
+        n = n + 1
+        registeredDice[n] = obj.guid;
+      end
+    end
+  end
+
+  printToAll("Successfully registered " .. n .. " dice")
+
+  registeredDiceCount = n
+  trackedRolls = initialiseTrackedRolls()
+  trackedRollCount = 0
+  calcExpectedProb(registeredDiceCount)
+  updateDisplay()
+  log(msg)
+end
+
+function calcExpectedProb(numDice)
+  expectedProb = {}
+
+  local min = numDice
+  local max = numDice * 6
+  local total = 6 ^ numDice
+
+  for i = min, max, 1 do expectedProb[i] = 0 end
+
+  buildExpectedProb(numDice, 0)
+
+  for key, val in pairs(expectedProb) do
+    expectedProb[key] = val / total
+  end
+end
+
+function buildExpectedProb(numDice, val)
+  if(numDice == 0) then
+    expectedProb[val] = expectedProb[val] + 1
+  else
+    for i = 1, 6, 1 do buildExpectedProb(numDice - 1, val + i) end
+  end
+end
+
+function initialiseTrackedRolls()
+  local t = {}
+  local min = registeredDiceCount
+  local max = registeredDiceCount * 6
+  for i = min, max, 1 do
+    t[i] = 0
+  end
+  return t
+end
+
+function updateDisplay()
+  local msg = "Total Rolls: " .. trackedRollCount .. "\n---\n"
+  if trackedRollCount == 0 then
+    msg = registeredDiceCount .. " dice registered.\n No rolls recorded yet "
+  else 
+    for val, count in pairs(trackedRolls) do
+      local pc = math.floor(count / trackedRollCount * 10000) / 100
+      local pcPad = ""
+      while (string.len(pc) + string.len(pcPad)) < 5 do pcPad = pcPad .. " " end
+      
+      local expectPC = math.floor(expectedProb[val] * 10000) / 100
+      local sVal = val < 10 and (" " .. val) or tostring(val)
+      local sCount = tostring(count)
+      if count < 100 then sCount = " "..count end
+      if count < 10 then sCount = ("  "..count) end
+
+      local expectedStr = ""
+      if showExpected then expectedStr = "    Standard: " .. expectPC .. "%" end
+      msg = msg .. (sVal .. ": " .. sCount .. "(" .. pc .. "%)" .. pcPad .. expectedStr .. "\n")
+    end
+  end
+  self.editButton({
+    index = 1,
+    label = msg
+  })
+end
+
+function appendRoll()
+  local sum = getDiceSum()
+  trackedRolls[sum] = trackedRolls[sum] + 1
+  trackedRollCount = trackedRollCount + 1
+  mostRecent = sum
+
+  updateDisplay()
+end
+
+function getDiceSum()
+  local dice = getDice()
+
+  local sum = 0
+  for _, die in ipairs(dice) do
+    sum = sum + die.getValue()
+  end
+
+  return sum
+end
+
+function getDice() 
+  local diceObjs = {}
+  local i = 0
+  if registeredDice != nil then
+    for _, guid in ipairs(registeredDice) do
+      i = i + 1
+      diceObjs[i] = getObjectFromGUID(guid)
+    end
+  else
+    local allObjs = getAllObjects()
+    for _, obj in ipairs(allObjs) do
+      if obj.tag == "Dice" then
+        i = i + 1
+        diceObjs[i] = obj
+      end
+    end
+  end
+
+  return diceObjs
+end
+
+function undoRoll()
+  log("Roll Count: " .. trackedRollCount .. " mostRecent: " .. tostring(mostRecent))
+  if(mostRecent ~= nil and trackedRollCount > 0) then
+    trackedRolls[mostRecent] = trackedRolls[mostRecent] - 1
+    trackedRollCount = trackedRollCount - 1
+    mostRecent = nil
+    updateDisplay()
+  end
+end
+
+function toggleShowExpected()
+  if showExpected then
+    showExpected = false
+    self.editButton({
+      index = 3,
+      label = "Hiding Expected Odds"
+    })
+  else
+    showExpected = true
+    self.editButton({
+      index = 3,
+      label = "Showing Expected Odds"
+    })
+  end
+  updateDisplay()
+end
+
+function noop() end
+
+self.createButton( {
+  click_function = 'registerDice',
+  function_owner = self,
+  label = 'Set Dice',
+  position = {-6.5, 0.75, -7.5},
+  width = 1500,
+  height = 500,
+  font_size = 350
+})
+
+self.createButton({
+  label = "Place Dice on this board and hit 'Set Dice'\n to start tracking their rolls\n You can move them wherever you want afterwards",
+  click_function = "noop",
+  function_owner = self,
+  position = { -0, 0.65, -0},
+  width = 0,
+  height = 0,
+  font_size = 350 
+})
+
+self.createButton( {
+  click_function = 'undoRoll',
+  function_owner = self,
+  label = 'Undo Last Roll',
+  position = {-2, 0.75, -7.5},
+  width = 2500,
+  height = 500,
+  font_size = 350
+})
+
+self.createButton( {
+  click_function = 'toggleShowExpected',
+  function_owner = self,
+  label = 'Hiding Expected Odds',
+  position = {4.5, 0.75, -7.5},
+  width = 3500,
+  height = 500,
+  font_size = 350
+})
+
+function findProximity(targetPos, object)
+  local objectPos = object.getPosition()
+  local xDistance = math.abs(targetPos.x - objectPos.x)
+  local zDistance = math.abs(targetPos.z - objectPos.z)
+  local distance = xDistance^2 + zDistance^2
+  return math.sqrt(distance)
+end
