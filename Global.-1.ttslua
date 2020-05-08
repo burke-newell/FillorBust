@@ -15,19 +15,19 @@ die6_GUID = 'd04b38'
 scoringZone_GUID = '9c0582'
 
 button1_parameters = {}
-button1_parameters.click_function = 'rollDice'
+button1_parameters.click_function = 'moveScoringOnes'
 button1_parameters.function_owner = nil
-button1_parameters.label = 'Roll Dice'
+button1_parameters.label = 'Move Scoring Ones'
 button1_parameters.position = {0,0.8,0}
 button1_parameters.rotation = {0,0,0}
-button1_parameters.width = 500
+button1_parameters.width = 1000
 button1_parameters.height = 500
 button1_parameters.font_size = 100
 
 button2_parameters = {}
 button2_parameters.click_function = 'printValues'
 button2_parameters.function_owner = nil
-button2_parameters.label = 'Print Values'
+button2_parameters.label = 'Score Dice \n Print Values'
 button2_parameters.position = {0,0.8,0}
 button2_parameters.rotation = {0,0,0}
 button2_parameters.width = 1000
@@ -83,7 +83,7 @@ end
 function onObjectRandomize(die1, player_color)
     clearScoringDice()
     Wait.condition(
-        function() return scoreDie(die1) end,
+        function() return sortDie(die1) end,
         function() return allDiceResting() end
     )
 end
@@ -91,7 +91,7 @@ end
 function onObjectRandomize(die2, player_color)
     clearScoringDice()
     Wait.condition(
-        function() return scoreDie(die2) end,
+        function() return sortDie(die2) end,
         function() return allDiceResting() end
     )
 end
@@ -99,7 +99,7 @@ end
 function onObjectRandomize(die3, player_color)
     clearScoringDice()
     Wait.condition(
-        function() return scoreDie(die3) end,
+        function() return sortDie(die3) end,
         function() return allDiceResting() end
     )
 end
@@ -107,7 +107,7 @@ end
 function onObjectRandomize(die4, player_color)
     clearScoringDice()
     Wait.condition(
-        function() return scoreDie(die4) end,
+        function() return sortDie(die4) end,
         function() return allDiceResting() end
     )
 end
@@ -115,7 +115,7 @@ end
 function onObjectRandomize(die5, player_color)
     clearScoringDice()
     Wait.condition(
-        function() return scoreDie(die5) end,
+        function() return sortDie(die5) end,
         function() return allDiceResting() end
     )
 end
@@ -123,7 +123,7 @@ end
 function onObjectRandomize(die6, player_color)
     clearScoringDice()
     Wait.condition(
-        function() return scoreDie(die6) end,
+        function() return sortDie(die6) end,
         function() return allDiceResting() end
     )
 end
@@ -151,6 +151,8 @@ threes = {}
 fours = {}
 fives = {}
 sixes = {}
+
+score = 0
 
 
 function clearScoringDice()
@@ -191,10 +193,8 @@ function clearScoringDice()
     end
 end
 
-function scoreDie(die)
-
+function sortDie(die)
     local value = die.getValue()
-
     if value == 1 then
         table.insert(ones, die.getGUID())
     end
@@ -213,22 +213,82 @@ function scoreDie(die)
     if value == 6 then
         table.insert(sixes, die.getGUID())
     end
+end
 
+function scoreDice()
+    if #ones == 6 then
+        score = score + 2000
+    end
+    if #ones == 5 then
+        score = score + 1200
+    end
+    if #ones == 4 then
+        score = score + 1100
+    end
+    if #ones == 3 then
+        score = score + 1000
+    end
+    if #ones < 3 then
+        score = score + #ones * 100
+    end
 
-    if value == 1 or value == 5 then
-        table.insert(scoringDice, die.getGUID())
+    if #twos == 6 then
+        score = score + 400
+    end
+    if #twos >= 3 and #twos < 6 then
+        score = score + 200
+    end
+
+    if #threes == 6 then
+        score = score + 600
+    end
+    if #threes >= 3 and #threes < 6 then
+        score = score + 300
+    end
+
+    if #fours == 6 then
+        score = score + 800
+    end
+    if #fours >= 3 and #fours < 6 then
+        score = score + 400
+    end
+
+    if #fives == 6 then
+        score = score + 1000
+    end
+    if fives == 5 then
+        score = score + 600
+    end
+    if fives == 4 then
+        score = score + 550
+    end
+    if #fives == 3 then
+        score = score + 500
+    end
+    if #fives < 3 then
+        score = score + #fives * 50
+    end
+
+    if #sixes == 6 then
+        score = score + 1200
+    end
+    if #sixes >= 3 and #sixes < 6 then
+        score = score + 600
     end
 end
 
 function printValues()
+    scoreDice()
     print(#ones, " ones")
     print(#twos, " twos")
     print(#threes, " threes")
     print(#fours, " fours")
     print(#fives, " fives")
     print(#sixes, " sixes")
+    print("Score: ", score)
     print("\n")
 end
+
 
 function checkFill()
     if findDiceInZone(scoringZone) ~= nil then
@@ -236,6 +296,23 @@ function checkFill()
         if #scoringDice == 6 then
             print("Fill!")
         end
+    end
+end
+
+function moveScoringOnes()
+    local length = #ones
+    if ones[length] ~= nil then
+        die = getObjectFromGUID(ones[length])
+    end
+
+    local scoringZonePosition = scoringZone.getPosition()
+    scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
+    die.setLock(true)
+    die.setPositionSmooth(scoringZonePosition, true, false)
+
+    if length >= 1 then
+        translateScoringDice()
+        table.remove(ones, length)
     end
 end
 
