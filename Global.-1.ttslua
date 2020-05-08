@@ -25,9 +25,9 @@ button1_parameters.height = 500
 button1_parameters.font_size = 100
 
 button2_parameters = {}
-button2_parameters.click_function = 'printScoringDiceButton'
+button2_parameters.click_function = 'printValues'
 button2_parameters.function_owner = nil
-button2_parameters.label = 'Print Scoring Dice'
+button2_parameters.label = 'Print Values'
 button2_parameters.position = {0,0.8,0}
 button2_parameters.rotation = {0,0,0}
 button2_parameters.width = 1000
@@ -145,6 +145,13 @@ function checkTriples()
 end
 
 scoringDice = {}
+ones = {}
+twos = {}
+threes = {}
+fours = {}
+fives = {}
+sixes = {}
+
 
 function clearScoringDice()
     for i in pairs (scoringDice) do
@@ -152,17 +159,84 @@ function clearScoringDice()
             scoringDice[i] = nil
         end
     end
+    for i in pairs (ones) do
+        if i ~= nil then
+            ones[i] = nil
+        end
+    end
+    for i in pairs (twos) do
+        if i ~= nil then
+            twos[i] = nil
+        end
+    end
+    for i in pairs (threes) do
+        if i ~= nil then
+            threes[i] = nil
+        end
+    end
+    for i in pairs (fours) do
+        if i ~= nil then
+            fours[i] = nil
+        end
+    end
+    for i in pairs (fives) do
+        if i ~= nil then
+            fives[i] = nil
+        end
+    end
+    for i in pairs (sixes) do
+        if i ~= nil then
+            sixes[i] = nil
+        end
+    end
 end
 
 function scoreDie(die)
+
     local value = die.getValue()
+
+    if value == 1 then
+        table.insert(ones, die.getGUID())
+    end
+    if value == 2 then
+        table.insert(twos, die.getGUID())
+    end
+    if value == 3 then
+        table.insert(threes, die.getGUID())
+    end
+    if value == 4 then
+        table.insert(fours, die.getGUID())
+    end
+    if value == 5 then
+        table.insert(fives, die.getGUID())
+    end
+    if value == 6 then
+        table.insert(sixes, die.getGUID())
+    end
+
+
     if value == 1 or value == 5 then
         table.insert(scoringDice, die.getGUID())
     end
 end
 
-function printScoringDiceButton()
-    Wait.time(moveScoringDice(), 5, #scoringDice)
+function printValues()
+    print(#ones, " ones")
+    print(#twos, " twos")
+    print(#threes, " threes")
+    print(#fours, " fours")
+    print(#fives, " fives")
+    print(#sixes, " sixes")
+    print("\n")
+end
+
+function checkFill()
+    if findDiceInZone(scoringZone) ~= nil then
+        local scoringDice = findDiceInZone(scoringZone)
+        if #scoringDice == 6 then
+            print("Fill!")
+        end
+    end
 end
 
 function moveScoringDice()
@@ -180,6 +254,8 @@ function moveScoringDice()
         translateScoringDice()
         table.remove(scoringDice, length)
     end
+
+    checkFill()
 end
 
 function moveScoringDie(die)
@@ -232,6 +308,7 @@ function resetDice()
         dice[i].setLock(false)
         dice[i].setPosition({-3.5 + i, 0, 0})
     end
+    clearScoringDice()
 end
 
 function sortDice()
