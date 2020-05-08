@@ -128,6 +128,7 @@ function scoreDie(die)
     local value = die.getValue()
     if value == 1 or value == 5 then
         moveScoringDie(die)
+        translateScoringDice()
     end
 end
 
@@ -138,13 +139,38 @@ function moveScoringDie(die)
 end
 
 function translateScoringDice()
-
+    local scoringDice = findDiceInZone(scoringZone)
+    if scoringDice ~= nil then
+        for i, object in ipairs(scoringDice) do
+            if object ~= nil then
+                object.setLock(true)
+                object.translate({1.5, 0, 0})
+            end
+        end
+    end
 end
-
 
 function checkResting(target)
     return target.resting
 end
+
+function findDiceInZone(zone)
+    local objectsInZone = zone.getObjects()
+    local diceFound = {}
+    for i, object in ipairs(objectsInZone) do
+        if object.tag == "Dice" then
+            table.insert(diceFound, object)
+        end
+    end
+    if #diceFound > 0 then
+        return diceFound
+    else
+        return nil
+    end
+end
+
+
+
 
 function rollDice()
     for i=1, 6 do
