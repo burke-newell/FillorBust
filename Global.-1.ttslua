@@ -35,12 +35,12 @@ button2_parameters.height = 500
 button2_parameters.font_size = 100
 
 button3_parameters = {}
-button3_parameters.click_function = 'sortDice'
+button3_parameters.click_function = 'allDiceResting'
 button3_parameters.function_owner = nil
-button3_parameters.label = 'Sort Dice'
+button3_parameters.label = 'Check Resting'
 button3_parameters.position = {0,0.8,0}
 button3_parameters.rotation = {0,0,0}
-button3_parameters.width = 500
+button3_parameters.width = 800
 button3_parameters.height = 500
 button3_parameters.font_size = 100
 
@@ -83,42 +83,42 @@ end
 function onObjectRandomize(die1, player_color)
     Wait.condition(
         function() return scoreDie(die1) end,
-        function() return checkResting(die1) end
+        function() return allDiceResting() end
     )
 end
 
 function onObjectRandomize(die2, player_color)
     Wait.condition(
         function() return scoreDie(die2) end,
-        function() return checkResting(die2) end
+        function() return allDiceResting() end
     )
 end
 
 function onObjectRandomize(die3, player_color)
     Wait.condition(
         function() return scoreDie(die3) end,
-        function() return checkResting(die3) end
+        function() return allDiceResting() end
     )
 end
 
 function onObjectRandomize(die4, player_color)
     Wait.condition(
         function() return scoreDie(die4) end,
-        function() return checkResting(die4) end
+        function() return allDiceResting() end
     )
 end
 
 function onObjectRandomize(die5, player_color)
     Wait.condition(
         function() return scoreDie(die5) end,
-        function() return checkResting(die5) end
+        function() return allDiceResting() end
     )
 end
 
 function onObjectRandomize(die6, player_color)
     Wait.condition(
         function() return scoreDie(die6) end,
-        function() return checkResting(die6) end
+        function() return allDiceResting() end
     )
 end
 
@@ -132,16 +132,16 @@ end
 function scoreDie(die)
     local value = die.getValue()
     if value == 1 or value == 5 then
-        moveScoringDie(die)
         translateScoringDice()
+        moveScoringDie(die)
     end
 end
 
 function moveScoringDie(die)
     scoringZonePosition = scoringZone.getPosition()
     scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
-    die.setPosition(scoringZonePosition)
     die.setLock(true)
+    die.setPosition(scoringZonePosition)
 end
 
 function translateScoringDice()
@@ -157,6 +157,14 @@ end
 
 function checkResting(target)
     return target.resting
+end
+
+function allDiceResting()
+    if checkResting(die1) and checkResting(die2) and checkResting(die3)
+        and checkResting(die4) and checkResting(die5) and checkResting(die6) then
+            return true
+        end
+    return false
 end
 
 function findDiceInZone(zone)
