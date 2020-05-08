@@ -180,7 +180,6 @@ function moveScoringDice()
         translateScoringDice()
         table.remove(scoringDice, length)
     end
-    return moveScoringDice()
 end
 
 function moveScoringDie(die)
