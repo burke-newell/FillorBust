@@ -5,12 +5,12 @@ checker4_GUID = 'b85973'
 
 deck_GUID = 'ad183d'
 
-dice1_GUID = '197209'
-dice2_GUID = '5e540b'
-dice3_GUID = 'a9545a'
-dice4_GUID = '4fd345'
-dice5_GUID = 'ad5a9d'
-dice6_GUID = 'd04b38'
+die1_GUID = '197209'
+die2_GUID = '5e540b'
+die3_GUID = 'a9545a'
+die4_GUID = '4fd345'
+die5_GUID = 'ad5a9d'
+die6_GUID = 'd04b38'
 
 scoringZone_GUID = '9c0582'
 
@@ -25,9 +25,9 @@ button1_parameters.height = 500
 button1_parameters.font_size = 100
 
 button2_parameters = {}
-button2_parameters.click_function = 'scoreStraight'
+button2_parameters.click_function = 'checkTriples'
 button2_parameters.function_owner = nil
-button2_parameters.label = 'Score Straight'
+button2_parameters.label = 'Check Triples'
 button2_parameters.position = {0,0.8,0}
 button2_parameters.rotation = {0,0,0}
 button2_parameters.width = 700
@@ -64,14 +64,14 @@ function onLoad()
 
     scoringZone = getObjectFromGUID(scoringZone_GUID)
 
-    dice1 = getObjectFromGUID(dice1_GUID)
-    dice2 = getObjectFromGUID(dice2_GUID)
-    dice3 = getObjectFromGUID(dice3_GUID)
-    dice4 = getObjectFromGUID(dice4_GUID)
-    dice5 = getObjectFromGUID(dice5_GUID)
-    dice6 = getObjectFromGUID(dice6_GUID)
+    die1 = getObjectFromGUID(die1_GUID)
+    die2 = getObjectFromGUID(die2_GUID)
+    die3 = getObjectFromGUID(die3_GUID)
+    die4 = getObjectFromGUID(die4_GUID)
+    die5 = getObjectFromGUID(die5_GUID)
+    die6 = getObjectFromGUID(die6_GUID)
 
-    dice = {dice1, dice2, dice3, dice4, dice5, dice6}
+    dice = {die1, die2, die3, die4, die5, die6}
 
     checker1.createButton(button1_parameters)
     checker2.createButton(button2_parameters)
@@ -121,6 +121,13 @@ function onObjectRandomize(die6, player_color)
         function() return checkResting(die6) end
     )
 end
+
+function checkTriples()
+    if die1.getValue() == die2.getValue() and die3.getValue() then
+        print("match")
+    end
+end
+
 
 function scoreDie(die)
     local value = die.getValue()
