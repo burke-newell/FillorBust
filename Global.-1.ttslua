@@ -303,36 +303,121 @@ function moveScoringOnes()
     local length = #ones
     if ones[length] ~= nil then
         die = getObjectFromGUID(ones[length])
+
+
+        local scoringZonePosition = scoringZone.getPosition()
+        scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
+        die.setLock(true)
+        die.setPositionSmooth(scoringZonePosition, true, false)
+
+        if length >= 1 then
+            translateScoringDice()
+            table.remove(ones, length)
+        end
     end
+end
+--[[
+function moveScoringTwos()
+    local length = #twos
+    if twos[length] ~= nil then
+        die = getObjectFromGUID(twos[length])
 
-    local scoringZonePosition = scoringZone.getPosition()
-    scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
-    die.setLock(true)
-    die.setPositionSmooth(scoringZonePosition, true, false)
 
-    if length >= 1 then
-        translateScoringDice()
-        table.remove(ones, length)
+        local scoringZonePosition = scoringZone.getPosition()
+        scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
+        die.setLock(true)
+        die.setPositionSmooth(scoringZonePosition, true, false)
+
+        if length >= 1 then
+            translateScoringDice()
+            table.remove(twos, length)
+        end
     end
 end
 
+function moveScoringThrees()
+    local length = #threes
+    if threes[length] ~= nil then
+        die = getObjectFromGUID(threes[length])
+
+
+        local scoringZonePosition = scoringZone.getPosition()
+        scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
+        die.setLock(true)
+        die.setPositionSmooth(scoringZonePosition, true, false)
+
+        if length >= 1 then
+            translateScoringDice()
+            table.remove(threes, length)
+        end
+    end
+end
+
+function moveScoringFours()
+    local length = #fours
+    if fours[length] ~= nil then
+        die = getObjectFromGUID(fours[length])
+
+
+        local scoringZonePosition = scoringZone.getPosition()
+        scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
+        die.setLock(true)
+        die.setPositionSmooth(scoringZonePosition, true, false)
+
+        if length >= 1 then
+            translateScoringDice()
+            table.remove(fours, length)
+        end
+    end
+end
+]]--
+function moveScoringFives()
+    local length = #fives
+    if fives[length] ~= nil then
+        die = getObjectFromGUID(fives[length])
+
+
+        local scoringZonePosition = scoringZone.getPosition()
+        scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
+        die.setLock(true)
+        die.setPositionSmooth(scoringZonePosition, true, false)
+
+        if length >= 1 then
+            translateScoringDice()
+            table.remove(fives, length)
+        end
+    end
+end
+--[[
+function moveScoringSixes()
+    local length = #sixes
+    if sixes[length] ~= nil then
+        die = getObjectFromGUID(sixes[length])
+
+
+        local scoringZonePosition = scoringZone.getPosition()
+        scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
+        die.setLock(true)
+        die.setPositionSmooth(scoringZonePosition, true, false)
+
+        if length >= 1 then
+            translateScoringDice()
+            table.remove(sixes, length)
+        end
+    end
+end
+]]--
 function moveScoringDice()
-    length = #scoringDice
-    if scoringDice[length] ~= nil then
-        die = getObjectFromGUID(scoringDice[length])
+    for i=1, #ones do
+        Wait.time(moveScoringOnes, i - 0.75)
     end
-
-    local scoringZonePosition = scoringZone.getPosition()
-    scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
-    die.setLock(true)
-    die.setPositionSmooth(scoringZonePosition, true, false)
-
-    if length >= 1 then
-        translateScoringDice()
-        table.remove(scoringDice, length)
+    --Wait.time(moveScoringTwos, 0.1)
+    --Wait.time(moveScoringThrees, 0.2)
+    --Wait.time(moveScoringFours, 0.3)
+    for i=1, #fives do
+        Wait.time(moveScoringFives, i - 0.5)
     end
-
-    checkFill()
+    --Wait.time(moveScoringSixes, 0.5)
 end
 
 function moveScoringDie(die)
