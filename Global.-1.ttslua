@@ -82,6 +82,59 @@ function onLoad()
 
 end
 
+function onObjectRandomize(die1, player_color)
+    Wait.condition(
+        function() return scoreDie(die1) end,
+        function() return checkResting(die1) end
+    )
+end
+
+function onObjectRandomize(die2, player_color)
+    Wait.condition(
+        function() return scoreDie(die2) end,
+        function() return checkResting(die2) end
+    )
+end
+
+function onObjectRandomize(die3, player_color)
+    Wait.condition(
+        function() return scoreDie(die3) end,
+        function() return checkResting(die3) end
+    )
+end
+
+function onObjectRandomize(die4, player_color)
+    Wait.condition(
+        function() return scoreDie(die4) end,
+        function() return checkResting(die4) end
+    )
+end
+
+function onObjectRandomize(die5, player_color)
+    Wait.condition(
+        function() return scoreDie(die5) end,
+        function() return checkResting(die5) end
+    )
+end
+
+function onObjectRandomize(die6, player_color)
+    Wait.condition(
+        function() return scoreDie(die6) end,
+        function() return checkResting(die6) end
+    )
+end
+
+function scoreDie(die)
+    local value = die.getValue()
+    if value == 1 or value == 5 then
+        die.setPosition(scoringZone.getPosition())
+    end
+end
+
+function checkResting(target)
+    return target.resting
+end
+
 function resetDeck()
     print('Reset Deck')
     deck.reset()
@@ -108,36 +161,10 @@ function sortDice()
     print(table.concat(sortedDice, ", "))
 end
 
-function scoreDice()
-    local object = rollingZone.getObjects()[1]
-    if object ~= nil then
-        object.setPositionSmooth(scoringZone.getPosition())
-    end
-end
-
 function scoreStraight()
     if sortedDice[1] == 1 and sortedDice[2] == 2 and sortedDice[3] == 3
         and sortedDice[4] == 4 and sortedDice[5] == 5 and sortedDice[6] == 6 then
             score = 1500
             print(score)
         end
-end
-
-function onObjectEnterScriptingZone(scoringZone, enter_object)
-end
-
-function scoreTriples()
-    if sortedDice[1] and sortedDice[2] and sortedDice[3] == 1 then
-        score = 100
-    end
-end
-
-function checkFill()
-
-end
-
-function checkBust()
-    if sum == 0 then
-        print('Bust!')
-    end
 end
