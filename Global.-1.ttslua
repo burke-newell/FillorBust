@@ -12,7 +12,6 @@ dice4_GUID = '4fd345'
 dice5_GUID = 'ad5a9d'
 dice6_GUID = 'd04b38'
 
-rollingZone_GUID = '3fedb9'
 scoringZone_GUID = '9c0582'
 
 button1_parameters = {}
@@ -46,9 +45,9 @@ button3_parameters.height = 500
 button3_parameters.font_size = 100
 
 button4_parameters = {}
-button4_parameters.click_function = 'scoreDice'
+button4_parameters.click_function = 'resetDice'
 button4_parameters.function_owner = nil
-button4_parameters.label = 'Score Dice'
+button4_parameters.label = 'Reset Dice'
 button4_parameters.position = {0,0.8,0}
 button4_parameters.rotation = {0,0,0}
 button4_parameters.width = 500
@@ -63,7 +62,6 @@ function onLoad()
 
     deck = getObjectFromGUID(deck_GUID)
 
-    rollingZone = getObjectFromGUID(rollingZone_GUID)
     scoringZone = getObjectFromGUID(scoringZone_GUID)
 
     dice1 = getObjectFromGUID(dice1_GUID)
@@ -134,8 +132,9 @@ end
 
 function moveScoringDie(die)
     scoringZonePosition = scoringZone.getPosition()
-    scoringZonePosition["x"] = scoringZonePosition["x"] - 3.5
+    scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
     die.setPosition(scoringZonePosition)
+    die.setLock(true)
 end
 
 function translateScoringDice()
@@ -143,7 +142,6 @@ function translateScoringDice()
     if scoringDice ~= nil then
         for i, object in ipairs(scoringDice) do
             if object ~= nil then
-                object.setLock(true)
                 object.translate({1.5, 0, 0})
             end
         end
@@ -169,19 +167,11 @@ function findDiceInZone(zone)
     end
 end
 
-
-
-
-function rollDice()
+function resetDice()
     for i=1, 6 do
-        dice[i].roll()
+        dice[i].setLock(false)
+        dice[i].setPosition({-3.5 + i, 0, 0})
     end
-    local rollWatch = function() return
-        dice[1].resting and dice[2].resting and dice[3].resting
-            and dice[4].resting and dice[5].resting and dice[6].resting end
-    local rollEnd = function() sortDice() end
-
-    Wait.condition(rollEnd, rollWatch)
 end
 
 function sortDice()
