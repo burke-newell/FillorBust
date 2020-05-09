@@ -184,6 +184,18 @@ function scoreDice()
 
     scoringEnabled = false
 
+    if #ones == 1 and #twos == 1 and #threes == 1 and #fours == 1 and #fives == 1 and #sixes == 1 then
+        tempScore = tempScore + 1500
+        table.insert(scoredDice, ones[1])
+        table.insert(scoredDice, twos[1])
+        table.insert(scoredDice, threes[1])
+        table.insert(scoredDice, fours[1])
+        table.insert(scoredDice, fives[1])
+        table.insert(scoredDice, sixes[1])
+        straightMessage = "STRAIGHT!"
+        broadcastToAll(straightMessage, colorIndex[currentPlayer])
+    end
+
     if #ones == 6 then
         tempScore = tempScore + 2000
         for i=1, 6 do
@@ -311,6 +323,14 @@ function scoreDice()
     end
 
     if #scoredDice == 0 then
+        if card.getName() ~= nil then
+            if card.getName() == "Must Bust" then
+                mustBustMessage = "Must Bust Score:"..tempScore
+                broadcastToAll(mustBustMessage, colorIndex[currentPlayer])
+                enableScoring()
+                return
+            end
+        end
         bustMessage = "BUST!"
         broadcastToAll(bustMessage, colorIndex[currentPlayer])
         tempScore = 0
