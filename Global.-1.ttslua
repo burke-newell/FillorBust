@@ -139,6 +139,9 @@ scoredDice = {}
 
 score = 0
 
+scoringEnabled = true
+movingEnabled = true
+
 function clearDiceTables()
     for i in pairs (ones) do
         if i ~= nil then
@@ -197,9 +200,19 @@ function sortDie(die)
     if value == 6 then
         table.insert(sixes, die.getGUID())
     end
+
+    Wait.time(scoreDice, 0.5)
+    Wait.time(moveScoredDice, 0.5)
 end
 
 function scoreDice()
+
+    if scoringEnabled ~= true then
+        return
+    end
+
+    scoringEnabled = false
+
     if #ones == 6 then
         score = score + 2000
         for i=1, 6 do
@@ -325,10 +338,17 @@ function scoreDice()
             table.insert(scoredDice, sixes[i])
         end
     end
+
+
+    printValues()
+    Wait.time(enableScoring, 3)
+end
+
+function enableScoring()
+    scoringEnabled = true
 end
 
 function printValues()
-    scoreDice()
     print(#ones, " ones")
     print(#twos, " twos")
     print(#threes, " threes")
@@ -369,9 +389,22 @@ function moveScoredDie()
 end
 
 function moveScoredDice()
+
+    if movingEnabled ~= true then
+        return
+    end
+
+    movingEnabled = false
+
     for i=1, #scoredDice do
         Wait.time(moveScoredDie, i - 0.75)
     end
+
+    Wait.time(enableMoving, 3)
+end
+
+function enableMoving()
+    movingEnabled = true
 end
 
 function translateScoringDice()
