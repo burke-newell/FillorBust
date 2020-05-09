@@ -90,55 +90,7 @@ function onObjectRandomize(die1, player_color)
     end
 end
 
-function onObjectRandomize(die2, player_color)
-    if die2.tag == "Dice" then
-        clearDiceTables()
-        Wait.condition(
-            function() return sortDie(die2) end,
-            function() return allDiceResting() end
-        )
-    end
-end
 
-function onObjectRandomize(die3, player_color)
-    if die3.tag == "Dice" then
-        clearDiceTables()
-        Wait.condition(
-            function() return sortDie(die3) end,
-            function() return allDiceResting() end
-        )
-    end
-end
-
-function onObjectRandomize(die4, player_color)
-    if die4.tag == "Dice" then
-        clearDiceTables()
-        Wait.condition(
-            function() return sortDie(die4) end,
-            function() return allDiceResting() end
-        )
-    end
-end
-
-function onObjectRandomize(die5, player_color)
-    if die5.tag == "Dice" then
-        clearDiceTables()
-        Wait.condition(
-            function() return sortDie(die5) end,
-            function() return allDiceResting() end
-        )
-    end
-end
-
-function onObjectRandomize(die6, player_color)
-    if die6.tag == "Dice" then
-        clearDiceTables()
-        Wait.condition(
-            function() return sortDie(die6) end,
-            function() return allDiceResting() end
-        )
-    end
-end
 
 ones = {}
 twos = {}
