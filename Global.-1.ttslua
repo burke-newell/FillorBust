@@ -15,9 +15,9 @@ die6_GUID = 'd04b38'
 scoringZone_GUID = '9c0582'
 
 button1_parameters = {}
-button1_parameters.click_function = 'moveScoringOnes'
+button1_parameters.click_function = 'Empty'
 button1_parameters.function_owner = nil
-button1_parameters.label = 'Move Scoring Ones'
+button1_parameters.label = 'Empty'
 button1_parameters.position = {0,0.8,0}
 button1_parameters.rotation = {0,0,0}
 button1_parameters.width = 1000
@@ -35,9 +35,9 @@ button2_parameters.height = 500
 button2_parameters.font_size = 100
 
 button3_parameters = {}
-button3_parameters.click_function = 'moveScoringDice'
+button3_parameters.click_function = 'moveScoredDice'
 button3_parameters.function_owner = nil
-button3_parameters.label = 'Move Scoring Dice'
+button3_parameters.label = 'Move Scored Dice'
 button3_parameters.position = {0,0.8,0}
 button3_parameters.rotation = {0,0,0}
 button3_parameters.width = 1000
@@ -81,7 +81,7 @@ function onLoad()
 end
 
 function onObjectRandomize(die1, player_color)
-    clearScoringDice()
+    clearDiceTables()
     Wait.condition(
         function() return sortDie(die1) end,
         function() return allDiceResting() end
@@ -89,7 +89,7 @@ function onObjectRandomize(die1, player_color)
 end
 
 function onObjectRandomize(die2, player_color)
-    clearScoringDice()
+    clearDiceTables()
     Wait.condition(
         function() return sortDie(die2) end,
         function() return allDiceResting() end
@@ -97,7 +97,7 @@ function onObjectRandomize(die2, player_color)
 end
 
 function onObjectRandomize(die3, player_color)
-    clearScoringDice()
+    clearDiceTables()
     Wait.condition(
         function() return sortDie(die3) end,
         function() return allDiceResting() end
@@ -105,7 +105,7 @@ function onObjectRandomize(die3, player_color)
 end
 
 function onObjectRandomize(die4, player_color)
-    clearScoringDice()
+    clearDiceTables()
     Wait.condition(
         function() return sortDie(die4) end,
         function() return allDiceResting() end
@@ -113,7 +113,7 @@ function onObjectRandomize(die4, player_color)
 end
 
 function onObjectRandomize(die5, player_color)
-    clearScoringDice()
+    clearDiceTables()
     Wait.condition(
         function() return sortDie(die5) end,
         function() return allDiceResting() end
@@ -121,30 +121,13 @@ function onObjectRandomize(die5, player_color)
 end
 
 function onObjectRandomize(die6, player_color)
-    clearScoringDice()
+    clearDiceTables()
     Wait.condition(
         function() return sortDie(die6) end,
         function() return allDiceResting() end
     )
 end
 
---[[
-function onObjectEnterScriptingZone(scoringZone, enter_object)
-    local position = enter_object.getPosition()
-    position["x"] = position["x"] + 1.5
-    enter_object.setPositionSmooth(position, true, false)
-end
-]]--
-
-
-
-function checkTriples()
-    if die1.getValue() == die2.getValue() and die3.getValue() then
-        print("match")
-    end
-end
-
-scoringDice = {}
 ones = {}
 twos = {}
 threes = {}
@@ -152,15 +135,11 @@ fours = {}
 fives = {}
 sixes = {}
 
+scoredDice = {}
+
 score = 0
 
-
-function clearScoringDice()
-    for i in pairs (scoringDice) do
-        if i ~= nil then
-            scoringDice[i] = nil
-        end
-    end
+function clearDiceTables()
     for i in pairs (ones) do
         if i ~= nil then
             ones[i] = nil
@@ -191,6 +170,11 @@ function clearScoringDice()
             sixes[i] = nil
         end
     end
+    for i in pairs (scoredDice) do
+        if i ~= nil then
+            scoredDice[i] = nil
+        end
+    end
 end
 
 function sortDie(die)
@@ -218,62 +202,128 @@ end
 function scoreDice()
     if #ones == 6 then
         score = score + 2000
+        for i=1, 6 do
+            table.insert(scoredDice, ones[i])
+        end
     end
     if #ones == 5 then
         score = score + 1200
+        for i=1, 5 do
+            table.insert(scoredDice, ones[i])
+        end
     end
     if #ones == 4 then
         score = score + 1100
+        for i=1, 4 do
+            table.insert(scoredDice, ones[i])
+        end
     end
     if #ones == 3 then
         score = score + 1000
+        for i=1, 3 do
+            table.insert(scoredDice, ones[i])
+        end
     end
-    if #ones < 3 then
-        score = score + #ones * 100
+    if #ones == 2 then
+        score = score + 200
+        for i=1, 2 do
+            table.insert(scoredDice, ones[i])
+        end
+    end
+    if #ones == 1 then
+        score = score + 100
+        for i=1, 1 do
+            table.insert(scoredDice, ones[i])
+        end
     end
 
     if #twos == 6 then
         score = score + 400
+        for i=1, 6 do
+            table.insert(scoredDice, twos[i])
+        end
     end
     if #twos >= 3 and #twos < 6 then
         score = score + 200
+        for i=1, 3 do
+            table.insert(scoredDice, twos[i])
+        end
     end
 
     if #threes == 6 then
         score = score + 600
+        for i=1, 6 do
+            table.insert(scoredDice, threes[i])
+        end
     end
     if #threes >= 3 and #threes < 6 then
         score = score + 300
+        for i=1, 3 do
+            table.insert(scoredDice, threes[i])
+        end
     end
 
     if #fours == 6 then
         score = score + 800
+        for i=1, 6 do
+            table.insert(scoredDice, fours[i])
+        end
     end
     if #fours >= 3 and #fours < 6 then
         score = score + 400
+        for i=1, 3 do
+            table.insert(scoredDice, fours[i])
+        end
     end
 
     if #fives == 6 then
         score = score + 1000
+        for i=1, 6 do
+            table.insert(scoredDice, fives[i])
+        end
     end
     if fives == 5 then
         score = score + 600
+        for i=1, 5 do
+            table.insert(scoredDice, fives[i])
+        end
     end
     if fives == 4 then
         score = score + 550
+        for i=1, 4 do
+            table.insert(scoredDice, fives[i])
+        end
     end
     if #fives == 3 then
         score = score + 500
+        for i=1, 3 do
+            table.insert(scoredDice, fives[i])
+        end
     end
-    if #fives < 3 then
-        score = score + #fives * 50
+    if #fives == 2 then
+        score = score + 100
+        for i=1, 2 do
+            table.insert(scoredDice, fives[i])
+        end
+    end
+    if #fives == 1 then
+        score = score + 50
+        for i=1, 1 do
+            table.insert(scoredDice, fives[i])
+        end
     end
 
     if #sixes == 6 then
         score = score + 1200
+        for i=1, 6 do
+            table.insert(scoredDice, sixes[i])
+        end
     end
     if #sixes >= 3 and #sixes < 6 then
         score = score + 600
+        for i=1, 3 do
+            table.insert(scoredDice, sixes[i])
+        end
     end
 end
 
@@ -286,6 +336,7 @@ function printValues()
     print(#fives, " fives")
     print(#sixes, " sixes")
     print("Score: ", score)
+    print("Scored Dice: ", #scoredDice)
     print("\n")
 end
 
@@ -299,132 +350,28 @@ function checkFill()
     end
 end
 
-function moveScoringOnes()
-    local length = #ones
-    if ones[length] ~= nil then
-        die = getObjectFromGUID(ones[length])
+function moveScoredDie()
+    local length = #scoredDice
+    if scoredDice[length] ~= nil then
+        local die = getObjectFromGUID(scoredDice[length])
 
 
         local scoringZonePosition = scoringZone.getPosition()
         scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
         die.setLock(true)
-        die.setPositionSmooth(scoringZonePosition, true, false)
+        die.setPositionSmooth(scoringZonePosition, false, false)
 
         if length >= 1 then
             translateScoringDice()
-            table.remove(ones, length)
-        end
-    end
-end
---[[
-function moveScoringTwos()
-    local length = #twos
-    if twos[length] ~= nil then
-        die = getObjectFromGUID(twos[length])
-
-
-        local scoringZonePosition = scoringZone.getPosition()
-        scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
-        die.setLock(true)
-        die.setPositionSmooth(scoringZonePosition, true, false)
-
-        if length >= 1 then
-            translateScoringDice()
-            table.remove(twos, length)
+            table.remove(scoredDice, length)
         end
     end
 end
 
-function moveScoringThrees()
-    local length = #threes
-    if threes[length] ~= nil then
-        die = getObjectFromGUID(threes[length])
-
-
-        local scoringZonePosition = scoringZone.getPosition()
-        scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
-        die.setLock(true)
-        die.setPositionSmooth(scoringZonePosition, true, false)
-
-        if length >= 1 then
-            translateScoringDice()
-            table.remove(threes, length)
-        end
+function moveScoredDice()
+    for i=1, #scoredDice do
+        Wait.time(moveScoredDie, i - 0.75)
     end
-end
-
-function moveScoringFours()
-    local length = #fours
-    if fours[length] ~= nil then
-        die = getObjectFromGUID(fours[length])
-
-
-        local scoringZonePosition = scoringZone.getPosition()
-        scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
-        die.setLock(true)
-        die.setPositionSmooth(scoringZonePosition, true, false)
-
-        if length >= 1 then
-            translateScoringDice()
-            table.remove(fours, length)
-        end
-    end
-end
-]]--
-function moveScoringFives()
-    local length = #fives
-    if fives[length] ~= nil then
-        die = getObjectFromGUID(fives[length])
-
-
-        local scoringZonePosition = scoringZone.getPosition()
-        scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
-        die.setLock(true)
-        die.setPositionSmooth(scoringZonePosition, true, false)
-
-        if length >= 1 then
-            translateScoringDice()
-            table.remove(fives, length)
-        end
-    end
-end
---[[
-function moveScoringSixes()
-    local length = #sixes
-    if sixes[length] ~= nil then
-        die = getObjectFromGUID(sixes[length])
-
-
-        local scoringZonePosition = scoringZone.getPosition()
-        scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
-        die.setLock(true)
-        die.setPositionSmooth(scoringZonePosition, true, false)
-
-        if length >= 1 then
-            translateScoringDice()
-            table.remove(sixes, length)
-        end
-    end
-end
-]]--
-function moveScoringDice()
-    for i=1, #ones do
-        Wait.time(moveScoringOnes, i - 0.75)
-    end
-    --Wait.time(moveScoringTwos, 0.1)
-    --Wait.time(moveScoringThrees, 0.2)
-    --Wait.time(moveScoringFours, 0.3)
-    for i=1, #fives do
-        Wait.time(moveScoringFives, i - 0.5)
-    end
-    --Wait.time(moveScoringSixes, 0.5)
-end
-
-function moveScoringDie(die)
-    scoringZonePosition = scoringZone.getPosition()
-    scoringZonePosition["x"] = scoringZonePosition["x"] - 3.75
-    die.setLock(true)
-    die.setPositionSmooth(scoringZonePosition, true, false)
 end
 
 function translateScoringDice()
@@ -470,7 +417,7 @@ function resetDice()
         dice[i].setLock(false)
         dice[i].setPosition({-3.5 + i, 0, 0})
     end
-    clearScoringDice()
+    clearDiceTables()
 end
 
 function sortDice()
