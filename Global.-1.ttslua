@@ -1,6 +1,8 @@
 
 checker_GUID = 'b85973'
 
+deck_GUID = '301e95'
+
 die1_GUID = '197209'
 die2_GUID = '5e540b'
 die3_GUID = 'a9545a'
@@ -11,14 +13,14 @@ die6_GUID = 'd04b38'
 scoringZone_GUID = '9c0582'
 
 button_parameters = {}
-button_parameters.click_function = 'resetDice'
+button_parameters.click_function = 'resetAndScoreButton'
 button_parameters.function_owner = nil
 button_parameters.label = 'Reset Dice \n & Score'
 button_parameters.position = {0,0.8,0}
 button_parameters.rotation = {0,0,0}
-button_parameters.width = 500
+button_parameters.width = 1000
 button_parameters.height = 500
-button_parameters.font_size = 100
+button_parameters.font_size = 200
 
 function onLoad()
     checker = getObjectFromGUID(checker_GUID)
@@ -33,12 +35,16 @@ function onLoad()
 
     dice = {die1, die2, die3, die4, die5, die6}
 
+    deck = getObjectFromGUID(deck_GUID)
+    deck.shuffle()
+
     scoringZone = getObjectFromGUID(scoringZone_GUID)
 
 end
 
 function onObjectRandomize(object, player_color)
     if object.tag == "Dice" then
+        currentPlayer = player_color
         clearDiceTables()
         Wait.condition(
             function() return sortDie(object) end,
@@ -46,21 +52,16 @@ function onObjectRandomize(object, player_color)
         )
     end
 end
---[[
-function onObjectLeaveContainer(container, leave_object)
-    if container.tag == "Deck" then
-        print(leave_object.getName())
-    end
-end
-]]--
 
 --parameter are incorrectly reversed in documentation
 function onObjectDrop(player_color, dropped_object)
+    currentPlayer = player_color
     if dropped_object.tag == "Card" then
         card = dropped_object
         card.flip()
         if card.getName() == "No Dice" then
-            print("NO DICE!")
+            noDiceMessage = "NO DICE!"
+            broadcastToAll(noDiceMessage, currentPlayer)
         end
     end
 end
@@ -74,7 +75,16 @@ sixes = {}
 
 scoredDice = {}
 
-score = 0
+tempScore = 0
+score = {}
+
+scoreIndex = {"White", "Red", "Yellow", "Green", "Blue", "Pink"}
+score["White"] = 0
+score["Red"] = 0
+score["Yellow"] = 0
+score["Green"] = 0
+score["Blue"] = 0
+score["Pink"] = 0
 
 scoringEnabled = true
 movingEnabled = true
@@ -151,138 +161,140 @@ function scoreDice()
     scoringEnabled = false
 
     if #ones == 6 then
-        score = score + 2000
+        tempScore = tempScore + 2000
         for i=1, 6 do
             table.insert(scoredDice, ones[i])
         end
     end
     if #ones == 5 then
-        score = score + 1200
+        tempScore = tempScore + 1200
         for i=1, 5 do
             table.insert(scoredDice, ones[i])
         end
     end
     if #ones == 4 then
-        score = score + 1100
+        tempScore = tempScore + 1100
         for i=1, 4 do
             table.insert(scoredDice, ones[i])
         end
     end
     if #ones == 3 then
-        score = score + 1000
+        tempScore = tempScore + 1000
         for i=1, 3 do
             table.insert(scoredDice, ones[i])
         end
     end
     if #ones == 2 then
-        score = score + 200
+        tempScore = tempScore + 200
         for i=1, 2 do
             table.insert(scoredDice, ones[i])
         end
     end
     if #ones == 1 then
-        score = score + 100
+        tempScore = tempScore + 100
         for i=1, 1 do
             table.insert(scoredDice, ones[i])
         end
     end
 
     if #twos == 6 then
-        score = score + 400
+        tempScore = tempScore + 400
         for i=1, 6 do
             table.insert(scoredDice, twos[i])
         end
     end
     if #twos >= 3 and #twos < 6 then
-        score = score + 200
+        tempScore = tempScore + 200
         for i=1, 3 do
             table.insert(scoredDice, twos[i])
         end
     end
 
     if #threes == 6 then
-        score = score + 600
+        tempScore = tempScore + 600
         for i=1, 6 do
             table.insert(scoredDice, threes[i])
         end
     end
     if #threes >= 3 and #threes < 6 then
-        score = score + 300
+        tempScore = tempScore + 300
         for i=1, 3 do
             table.insert(scoredDice, threes[i])
         end
     end
 
     if #fours == 6 then
-        score = score + 800
+        tempScore = tempScore + 800
         for i=1, 6 do
             table.insert(scoredDice, fours[i])
         end
     end
     if #fours >= 3 and #fours < 6 then
-        score = score + 400
+        tempScore = tempScore + 400
         for i=1, 3 do
             table.insert(scoredDice, fours[i])
         end
     end
 
     if #fives == 6 then
-        score = score + 1000
+        tempScore = tempScore + 1000
         for i=1, 6 do
             table.insert(scoredDice, fives[i])
         end
     end
     if fives == 5 then
-        score = score + 600
+        tempScore = tempScore + 600
         for i=1, 5 do
             table.insert(scoredDice, fives[i])
         end
     end
     if fives == 4 then
-        score = score + 550
+        tempScore = tempScore + 550
         for i=1, 4 do
             table.insert(scoredDice, fives[i])
         end
     end
     if #fives == 3 then
-        score = score + 500
+        tempScore = tempScore + 500
         for i=1, 3 do
             table.insert(scoredDice, fives[i])
         end
     end
     if #fives == 2 then
-        score = score + 100
+        tempScore = tempScore + 100
         for i=1, 2 do
             table.insert(scoredDice, fives[i])
         end
     end
     if #fives == 1 then
-        score = score + 50
+        tempScore = tempScore + 50
         for i=1, 1 do
             table.insert(scoredDice, fives[i])
         end
     end
 
     if #sixes == 6 then
-        score = score + 1200
+        tempScore = tempScore + 1200
         for i=1, 6 do
             table.insert(scoredDice, sixes[i])
         end
     end
     if #sixes >= 3 and #sixes < 6 then
-        score = score + 600
+        tempScore = tempScore + 600
         for i=1, 3 do
             table.insert(scoredDice, sixes[i])
         end
     end
 
     if #scoredDice == 0 then
-        print("BUST!")
-        score = 0
+        bustMessage = "BUST!"
+        broadcastToAll(bustMessage, currentPlayer)
+        tempScore = 0
     end
 
+    tempScoreMessage = currentPlayer.." Temporary Score: "..tempScore
+    broadcastToAll(tempScoreMessage, currentPlayer)
 
-    printValues()
     Wait.time(enableScoring, 3)
 end
 
@@ -290,51 +302,43 @@ function enableScoring()
     scoringEnabled = true
 end
 
-function printValues()
-    --[[
-    print(#ones, " ones")
-    print(#twos, " twos")
-    print(#threes, " threes")
-    print(#fours, " fours")
-    print(#fives, " fives")
-    print(#sixes, " sixes")
-    ]]--
-    print("Score: ", score)
-    --print("Scored Dice: ", #scoredDice)
-    print("\n")
-end
-
-
 function checkFill()
     if findDiceInZone(scoringZone) ~= nil then
         local scoringDice = findDiceInZone(scoringZone)
         if #scoringDice == 6 then
-            print("FILL!")
+            fillMessage = "FILL!"
+            broadcastToAll(fillMessage, currentPlayer)
 
             if card.getName() == "Bonus 300" then
-                score = score + 300
-                print("Bonus 300 Awarded! \nScore: ", score)
+                score[currentPlayer] = score[currentPlayer] + 300
+                bonus300Message = "Bonus 300 Awarded!"
+                broadcastToAll(bonus300Message, currentPlayer)
             end
             if card.getName() == "Bonus 400" then
-                score = score + 400
-                print("Bonus 400 Awarded! \nScore: ", score)
+                score[currentPlayer] = score[currentPlayer] + 400
+                bonus400Message = "Bonus 400 Awarded!"
+                broadcastToAll(bonus400Message, currentPlayer)
             end
             if card.getName() == "Bonus 500" then
-                score = score + 500
-                print("Bonus 500 Awarded! \nScore: ", score)
+                score[currentPlayer] = score[currentPlayer] + 500
+                bonus500Message = "Bonus 500 Awarded!"
+                broadcastToAll(bonus500Message, currentPlayer)
             end
             if card.getName() == "Fill 1000" then
-                score = score + 1000
-                print("Fill 1000 Awarded! \nScore: ", score)
+                score[currentPlayer] = score[currentPlayer] + 1000
+                fill1000Message = "Fill 1000 Awarded!"
+                broadcastToAll(fill1000Message, currentPlayer)
             end
             if card.getName() == "Double Trouble" then
                 fillCount = fillCount + 1
                 if fillCount == 2 then
-                    score = score * 2
-                    print("Double Trouble Awarded! \nScore: ", score)
+                    score[currentPlayer] = score[currentPlayer] + tempScore * 2
+                    doubleTroubleMessage = "Double Trouble Awarded!"
+                    broadcastToAll(doubleTroubleMessage, currentPlayer)
                     fillCount = 0
                 end
             end
+            --NEED TO FINISH
             if card.getName() == "Vengeance 2500" then
                 highestScore = highestScore - 2500
             end
@@ -417,28 +421,21 @@ function findDiceInZone(zone)
     end
 end
 
-function resetDice()
+function resetAndScoreButton()
+    score[currentPlayer] = score[currentPlayer] + tempScore
+    scoreMessage = currentPlayer.." Score: "..score[currentPlayer]
+    broadcastToAll(scoreMessage, currentPlayer)
     for i=1, 6 do
         dice[i].setLock(false)
         dice[i].setPosition({-3.5 + i, 0, 0})
     end
     clearDiceTables()
-    score = 0
+    tempScore = 0
+    findHighScore()
 end
 
-function sortDice()
-    unsortedDice = {}
-    for i=1, 6 do
-        table.insert(unsortedDice, dice[i].getValue())
+function findHighScore()
+    for key, value in ipairs(scoreIndex) do
+        print(score[key].." "..score[value])
     end
-    sortedDice = table.sort(unsortedDice)
-    print(table.concat(sortedDice, ", "))
-end
-
-function scoreStraight()
-    if sortedDice[1] == 1 and sortedDice[2] == 2 and sortedDice[3] == 3
-        and sortedDice[4] == 4 and sortedDice[5] == 5 and sortedDice[6] == 6 then
-            score = 1500
-            print(score)
-        end
 end
