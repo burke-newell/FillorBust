@@ -44,7 +44,7 @@ end
 
 function onObjectRandomize(object, player_color)
     if object.tag == "Dice" then
-        currentPlayer = player_color
+        assignPlayerColorToIndex(player_color)
         clearDiceTables()
         Wait.condition(
             function() return sortDie(object) end,
@@ -55,14 +55,37 @@ end
 
 --parameter are incorrectly reversed in documentation
 function onObjectDrop(player_color, dropped_object)
-    currentPlayer = player_color
+    assignPlayerColorToIndex(player_color)
     if dropped_object.tag == "Card" then
         card = dropped_object
         card.flip()
         if card.getName() == "No Dice" then
             noDiceMessage = "NO DICE!"
-            broadcastToAll(noDiceMessage, currentPlayer)
+            broadcastToAll(noDiceMessage, colorIndex[currentPlayer])
         end
+    end
+end
+
+colorIndex = {"White", "Red", "Yellow", "Green", "Blue", "Pink"}
+
+function assignPlayerColorToIndex(player_color)
+    if player_color == "White" then
+        currentPlayer = 1
+    end
+    if player_color == "Red" then
+        currentPlayer = 2
+    end
+    if player_color == "Yellow" then
+        currentPlayer = 3
+    end
+    if player_color == "Green" then
+        currentPlayer = 4
+    end
+    if player_color == "Blue" then
+        currentPlayer = 5
+    end
+    if player_color == "Pink" then
+        currentPlayer = 6
     end
 end
 
@@ -73,18 +96,19 @@ fours = {}
 fives = {}
 sixes = {}
 
+scoredDiceCounter = 0
+
 scoredDice = {}
 
 tempScore = 0
 score = {}
 
-scoreIndex = {"White", "Red", "Yellow", "Green", "Blue", "Pink"}
-score["White"] = 0
-score["Red"] = 0
-score["Yellow"] = 0
-score["Green"] = 0
-score["Blue"] = 0
-score["Pink"] = 0
+score[1] = 0
+score[2] = 0
+score[3] = 0
+score[4] = 0
+score[5] = 0
+score[6] = 0
 
 scoringEnabled = true
 movingEnabled = true
@@ -288,12 +312,13 @@ function scoreDice()
 
     if #scoredDice == 0 then
         bustMessage = "BUST!"
-        broadcastToAll(bustMessage, currentPlayer)
+        broadcastToAll(bustMessage, colorIndex[currentPlayer])
         tempScore = 0
+        scoredDiceCounter = 0
     end
 
-    tempScoreMessage = currentPlayer.." Temporary Score: "..tempScore
-    broadcastToAll(tempScoreMessage, currentPlayer)
+    tempScoreMessage = colorIndex[currentPlayer].." Temporary Score: "..tempScore
+    broadcastToAll(tempScoreMessage, colorIndex[currentPlayer])
 
     Wait.time(enableScoring, 3)
 end
@@ -302,49 +327,47 @@ function enableScoring()
     scoringEnabled = true
 end
 
-function checkFill()
-    if findDiceInZone(scoringZone) ~= nil then
-        local scoringDice = findDiceInZone(scoringZone)
-        if #scoringDice == 6 then
-            fillMessage = "FILL!"
-            broadcastToAll(fillMessage, currentPlayer)
+function fill()
+    if card.getName() ~= nil then
+        fillMessage = "FILL!"
+        broadcastToAll(fillMessage, colorIndex[currentPlayer])
 
-            if card.getName() == "Bonus 300" then
-                score[currentPlayer] = score[currentPlayer] + 300
-                bonus300Message = "Bonus 300 Awarded!"
-                broadcastToAll(bonus300Message, currentPlayer)
+        if card.getName() == "Bonus 300" then
+            score[currentPlayer] = score[currentPlayer] + 300
+            bonus300Message = "Bonus 300 Awarded!"
+            broadcastToAll(bonus300Message, colorIndex[currentPlayer])
+        end
+        if card.getName() == "Bonus 400" then
+            score[currentPlayer] = score[currentPlayer] + 400
+            bonus400Message = "Bonus 400 Awarded!"
+            broadcastToAll(bonus400Message, colorIndex[currentPlayer])
+        end
+        if card.getName() == "Bonus 500" then
+            score[currentPlayer] = score[currentPlayer] + 500
+            bonus500Message = "Bonus 500 Awarded!"
+            broadcastToAll(bonus500Message, colorIndex[currentPlayer])
+        end
+        if card.getName() == "Fill 1000" then
+            score[currentPlayer] = score[currentPlayer] + 1000
+            fill1000Message = "Fill 1000 Awarded!"
+            broadcastToAll(fill1000Message, colorIndex[currentPlayer])
+        end
+        if card.getName() == "Double Trouble" then
+            fillCount = fillCount + 1
+            if fillCount == 2 then
+                score[currentPlayer] = score[currentPlayer] + tempScore * 2
+                doubleTroubleMessage = "Double Trouble Awarded!"
+                broadcastToAll(doubleTroubleMessage, colorIndex[currentPlayer])
+                fillCount = 0
             end
-            if card.getName() == "Bonus 400" then
-                score[currentPlayer] = score[currentPlayer] + 400
-                bonus400Message = "Bonus 400 Awarded!"
-                broadcastToAll(bonus400Message, currentPlayer)
-            end
-            if card.getName() == "Bonus 500" then
-                score[currentPlayer] = score[currentPlayer] + 500
-                bonus500Message = "Bonus 500 Awarded!"
-                broadcastToAll(bonus500Message, currentPlayer)
-            end
-            if card.getName() == "Fill 1000" then
-                score[currentPlayer] = score[currentPlayer] + 1000
-                fill1000Message = "Fill 1000 Awarded!"
-                broadcastToAll(fill1000Message, currentPlayer)
-            end
-            if card.getName() == "Double Trouble" then
-                fillCount = fillCount + 1
-                if fillCount == 2 then
-                    score[currentPlayer] = score[currentPlayer] + tempScore * 2
-                    doubleTroubleMessage = "Double Trouble Awarded!"
-                    broadcastToAll(doubleTroubleMessage, currentPlayer)
-                    fillCount = 0
-                end
-            end
-            --NEED TO FINISH
-            if card.getName() == "Vengeance 2500" then
-                highestScore = highestScore - 2500
-            end
+        end
+        if card.getName() == "Vengeance 2500" then
+            findHighScorePlayer()
+            score[highScorePlayer] = score[highScorePlayer] - 2500
         end
     end
 end
+
 
 function moveScoredDie()
     local length = #scoredDice
@@ -365,7 +388,6 @@ function moveScoredDie()
 end
 
 function moveScoredDice()
-
     if movingEnabled ~= true then
         return
     end
@@ -374,9 +396,12 @@ function moveScoredDice()
 
     for i=1, #scoredDice do
         Wait.time(moveScoredDie, i - 0.75)
+        scoredDiceCounter = scoredDiceCounter + 1
+        if scoredDiceCounter == 6 then
+            fill()
+        end
     end
     Wait.time(enableMoving, 3)
-    Wait.time(checkFill, 3)
 end
 
 function enableMoving()
@@ -423,19 +448,28 @@ end
 
 function resetAndScoreButton()
     score[currentPlayer] = score[currentPlayer] + tempScore
-    scoreMessage = currentPlayer.." Score: "..score[currentPlayer]
-    broadcastToAll(scoreMessage, currentPlayer)
+    scoreMessage = colorIndex[currentPlayer].." Score: "..score[currentPlayer]
+    broadcastToAll(scoreMessage, colorIndex[currentPlayer])
     for i=1, 6 do
         dice[i].setLock(false)
         dice[i].setPosition({-3.5 + i, 0, 0})
     end
     clearDiceTables()
     tempScore = 0
-    findHighScore()
+    scoredDiceCounter = 0
 end
 
-function findHighScore()
-    for key, value in ipairs(scoreIndex) do
-        print(score[key].." "..score[value])
+function findHighScorePlayer()
+    highScorePlayer = (max(score, function(a,b) return a < b end))
+end
+
+function max(t, fn)
+    if #t == 0 then return nil, nil end
+    local key, value = 1, t[1]
+    for i = 2, #t do
+        if fn(value, t[i]) then
+            key, value = i, t[i]
+        end
     end
+    return key
 end
