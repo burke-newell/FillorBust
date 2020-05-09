@@ -47,7 +47,7 @@ button3_parameters.font_size = 100
 button4_parameters = {}
 button4_parameters.click_function = 'resetDice'
 button4_parameters.function_owner = nil
-button4_parameters.label = 'Reset Dice'
+button4_parameters.label = 'Reset Dice \n & Score'
 button4_parameters.position = {0,0.8,0}
 button4_parameters.rotation = {0,0,0}
 button4_parameters.width = 500
@@ -339,6 +339,11 @@ function scoreDice()
         end
     end
 
+    if #scoredDice == 0 then
+        print("BUST!")
+        score = 0
+    end
+
 
     printValues()
     Wait.time(enableScoring, 3)
@@ -349,14 +354,16 @@ function enableScoring()
 end
 
 function printValues()
+    --[[
     print(#ones, " ones")
     print(#twos, " twos")
     print(#threes, " threes")
     print(#fours, " fours")
     print(#fives, " fives")
     print(#sixes, " sixes")
+    ]]--
     print("Score: ", score)
-    print("Scored Dice: ", #scoredDice)
+    --print("Scored Dice: ", #scoredDice)
     print("\n")
 end
 
@@ -365,7 +372,7 @@ function checkFill()
     if findDiceInZone(scoringZone) ~= nil then
         local scoringDice = findDiceInZone(scoringZone)
         if #scoringDice == 6 then
-            print("Fill!")
+            print("FILL!")
         end
     end
 end
@@ -399,8 +406,8 @@ function moveScoredDice()
     for i=1, #scoredDice do
         Wait.time(moveScoredDie, i - 0.75)
     end
-
     Wait.time(enableMoving, 3)
+    Wait.time(checkFill, 3)
 end
 
 function enableMoving()
@@ -451,6 +458,7 @@ function resetDice()
         dice[i].setPosition({-3.5 + i, 0, 0})
     end
     clearDiceTables()
+    score = 0
 end
 
 function sortDice()
