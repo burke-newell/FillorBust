@@ -80,17 +80,15 @@ function onLoad()
 
 end
 
-function onObjectRandomize(die1, player_color)
-    if die1.tag == "Dice" then
+function onObjectRandomize(die, player_color)
+    if die.tag == "Dice" then
         clearDiceTables()
         Wait.condition(
-            function() return sortDie(die1) end,
+            function() return sortDie(die) end,
             function() return allDiceResting() end
         )
     end
 end
-
-
 
 ones = {}
 twos = {}
