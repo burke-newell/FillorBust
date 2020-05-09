@@ -1,9 +1,5 @@
-checker1_GUID = 'a8c36b'
-checker2_GUID = '6d6e51'
-checker3_GUID = '420478'
-checker4_GUID = 'b85973'
 
-deck_GUID = 'ad183d'
+checker_GUID = 'b85973'
 
 die1_GUID = '197209'
 die2_GUID = '5e540b'
@@ -14,55 +10,19 @@ die6_GUID = 'd04b38'
 
 scoringZone_GUID = '9c0582'
 
-button1_parameters = {}
-button1_parameters.click_function = 'Empty'
-button1_parameters.function_owner = nil
-button1_parameters.label = 'Empty'
-button1_parameters.position = {0,0.8,0}
-button1_parameters.rotation = {0,0,0}
-button1_parameters.width = 1000
-button1_parameters.height = 500
-button1_parameters.font_size = 100
-
-button2_parameters = {}
-button2_parameters.click_function = 'printValues'
-button2_parameters.function_owner = nil
-button2_parameters.label = 'Score Dice \n Print Values'
-button2_parameters.position = {0,0.8,0}
-button2_parameters.rotation = {0,0,0}
-button2_parameters.width = 1000
-button2_parameters.height = 500
-button2_parameters.font_size = 100
-
-button3_parameters = {}
-button3_parameters.click_function = 'moveScoredDice'
-button3_parameters.function_owner = nil
-button3_parameters.label = 'Move Scored Dice'
-button3_parameters.position = {0,0.8,0}
-button3_parameters.rotation = {0,0,0}
-button3_parameters.width = 1000
-button3_parameters.height = 500
-button3_parameters.font_size = 100
-
-button4_parameters = {}
-button4_parameters.click_function = 'resetDice'
-button4_parameters.function_owner = nil
-button4_parameters.label = 'Reset Dice \n & Score'
-button4_parameters.position = {0,0.8,0}
-button4_parameters.rotation = {0,0,0}
-button4_parameters.width = 500
-button4_parameters.height = 500
-button4_parameters.font_size = 100
+button_parameters = {}
+button_parameters.click_function = 'resetDice'
+button_parameters.function_owner = nil
+button_parameters.label = 'Reset Dice \n & Score'
+button_parameters.position = {0,0.8,0}
+button_parameters.rotation = {0,0,0}
+button_parameters.width = 500
+button_parameters.height = 500
+button_parameters.font_size = 100
 
 function onLoad()
-    checker1 = getObjectFromGUID(checker1_GUID)
-    checker2 = getObjectFromGUID(checker2_GUID)
-    checker3 = getObjectFromGUID(checker3_GUID)
-    checker4 = getObjectFromGUID(checker4_GUID)
-
-    deck = getObjectFromGUID(deck_GUID)
-
-    scoringZone = getObjectFromGUID(scoringZone_GUID)
+    checker = getObjectFromGUID(checker_GUID)
+    checker.createButton(button_parameters)
 
     die1 = getObjectFromGUID(die1_GUID)
     die2 = getObjectFromGUID(die2_GUID)
@@ -73,20 +33,35 @@ function onLoad()
 
     dice = {die1, die2, die3, die4, die5, die6}
 
-    checker1.createButton(button1_parameters)
-    checker2.createButton(button2_parameters)
-    checker3.createButton(button3_parameters)
-    checker4.createButton(button4_parameters)
+    scoringZone = getObjectFromGUID(scoringZone_GUID)
 
 end
 
-function onObjectRandomize(die, player_color)
-    if die.tag == "Dice" then
+function onObjectRandomize(object, player_color)
+    if object.tag == "Dice" then
         clearDiceTables()
         Wait.condition(
-            function() return sortDie(die) end,
+            function() return sortDie(object) end,
             function() return allDiceResting() end
         )
+    end
+end
+--[[
+function onObjectLeaveContainer(container, leave_object)
+    if container.tag == "Deck" then
+        print(leave_object.getName())
+    end
+end
+]]--
+
+--parameter are incorrectly reversed in documentation
+function onObjectDrop(player_color, dropped_object)
+    if dropped_object.tag == "Card" then
+        card = dropped_object
+        card.flip()
+        if card.getName() == "No Dice" then
+            print("NO DICE!")
+        end
     end
 end
 
@@ -335,6 +310,34 @@ function checkFill()
         local scoringDice = findDiceInZone(scoringZone)
         if #scoringDice == 6 then
             print("FILL!")
+
+            if card.getName() == "Bonus 300" then
+                score = score + 300
+                print("Bonus 300 Awarded! \nScore: ", score)
+            end
+            if card.getName() == "Bonus 400" then
+                score = score + 400
+                print("Bonus 400 Awarded! \nScore: ", score)
+            end
+            if card.getName() == "Bonus 500" then
+                score = score + 500
+                print("Bonus 500 Awarded! \nScore: ", score)
+            end
+            if card.getName() == "Fill 1000" then
+                score = score + 1000
+                print("Fill 1000 Awarded! \nScore: ", score)
+            end
+            if card.getName() == "Double Trouble" then
+                fillCount = fillCount + 1
+                if fillCount == 2 then
+                    score = score * 2
+                    print("Double Trouble Awarded! \nScore: ", score)
+                    fillCount = 0
+                end
+            end
+            if card.getName() == "Vengeance 2500" then
+                highestScore = highestScore - 2500
+            end
         end
     end
 end
