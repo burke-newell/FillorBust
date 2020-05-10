@@ -56,62 +56,51 @@ function onLoad()
     Turns.enable = true
 end
 
+function rollDiceButton()
+    assignPlayerColorToIndex(Turns.turn_color)
 
-
-function rollDiceButton(objectButtonClicked, playerColorClicked)
-    if card.getName() ~= nil then
-        assignPlayerColorToIndex(Turns.turn_color)
-
-
-
-        if twos ~= nil then
-            for i, guid in ipairs(twos) do
-                table.insert(unScoredDice, twos[i])
-                --table.remove(twos, #twos)
-            end
+    if twos ~= nil then
+        for i, guid in ipairs(twos) do
+            table.insert(unScoredDice, twos[i])
         end
-        if threes ~= nil then
-            for i, guid in ipairs(threes) do
-                table.insert(unScoredDice, threes[i])
-                --table.remove(threes, #threes)
-            end
+    end
+    if threes ~= nil then
+        for i, guid in ipairs(threes) do
+            table.insert(unScoredDice, threes[i])
         end
-        if fours ~= nil then
-            for i, guid in ipairs(fours) do
-                table.insert(unScoredDice, fours[i])
-                --table.remove(fours, #fours)
-            end
+    end
+    if fours ~= nil then
+        for i, guid in ipairs(fours) do
+            table.insert(unScoredDice, fours[i])
         end
-        if sixes ~= nil then
-            for i, guid in ipairs(sixes) do
-                table.insert(unScoredDice, sixes[i])
-                --table.remove(sixes, #sixes)
-            end
+    end
+    if sixes ~= nil then
+        for i, guid in ipairs(sixes) do
+            table.insert(unScoredDice, sixes[i])
         end
+    end
 
-
-        if #unScoredDice == 0 then
-            clearDiceTables()
-            for i, die in ipairs(dice) do
-                die.randomize()
-                Wait.condition(
-                    function() return sortDie(die) end,
-                    function() return allDiceResting() end
-                )
-            end
+    if #unScoredDice == 0 then
+        clearDiceTables()
+        for i, die in ipairs(dice) do
+            die.randomize()
+            Wait.condition(
+                function() return sortDie(die) end,
+                function() return allDiceResting() end
+            )
         end
-        if unScoredDice ~= nil then
-            clearDiceTables()
-            for i, guid in ipairs(unScoredDice) do
-                local die = getObjectFromGUID(guid)
-                die.randomize()
-                Wait.condition(
-                    function() return sortDie(die) end,
-                    function() return allDiceResting() end
-                )
-            end
-            unScoredDice = {}
+    end
+    if unScoredDice ~= nil then
+        clearDiceTables()
+        for i, guid in ipairs(unScoredDice) do
+            local die = getObjectFromGUID(guid)
+            die.randomize()
+            Wait.condition(
+                function() return sortDie(die) end,
+                function() return allDiceResting() end
+            )
         end
+        unScoredDice = {}
     end
 end
 --[[
@@ -135,9 +124,17 @@ function onObjectDrop(player_color, dropped_object)
         if card.getName() == "No Dice" then
             noDiceMessage = "NO DICE!"
             broadcastToAll(noDiceMessage, colorIndex[currentPlayer])
+            tempScore = 0
         end
     end
 end
+
+function onObjectLeaveContainer(container, leave_object)
+    if leave_object.tag == "Card" then
+        card = leave_object
+    end
+end
+
 
 colorIndex = {"White", "Red", "Yellow", "Green", "Blue", "Pink"}
 
@@ -258,7 +255,8 @@ function scoreDice()
     end
 
     scoringEnabled = false
-
+    --AND operator maybe not working how I think
+    --[[
     if #ones == 1 and #twos == 1 and #threes == 1 and #fours == 1 and #fives == 1 and #sixes == 1 then
         tempScore = tempScore + 1500
         table.insert(scoredDice, ones[1])
@@ -270,7 +268,7 @@ function scoreDice()
         straightMessage = "STRAIGHT!"
         broadcastToAll(straightMessage, colorIndex[currentPlayer])
     end
-
+    ]]--
     if #ones == 6 then
         tempScore = tempScore + 2000
         for i=1, 6 do
