@@ -1,5 +1,6 @@
 
 block1_GUID = '4d4cfa'
+block2_GUID = 'c0cf84'
 checker2_GUID = 'ed90ce'
 
 deck_GUID = '301e95'
@@ -12,6 +13,8 @@ die5_GUID = 'ad5a9d'
 die6_GUID = 'd04b38'
 
 scoringZone_GUID = '9c0582'
+drawZone_GUID = '9c940c'
+discardZone_GUID = '947020'
 
 button1_parameters = {}
 button1_parameters.click_function = 'rollDiceButton'
@@ -24,20 +27,34 @@ button1_parameters.height = 500
 button1_parameters.font_size = 200
 
 button2_parameters = {}
-button2_parameters.click_function = 'keepGoingButton'
+button2_parameters.click_function = 'drawButton'
 button2_parameters.function_owner = nil
-button2_parameters.label = 'Keep Going'
+button2_parameters.label = 'Draw Card'
 button2_parameters.position = {0,0.8,0}
 button2_parameters.rotation = {0,0,0}
 button2_parameters.width = 1000
 button2_parameters.height = 500
 button2_parameters.font_size = 200
 
+button3_parameters = {}
+button3_parameters.click_function = 'keepGoingButton'
+button3_parameters.function_owner = nil
+button3_parameters.label = 'Keep Going'
+button3_parameters.position = {0,0.8,0}
+button3_parameters.rotation = {0,0,0}
+button3_parameters.width = 1000
+button3_parameters.height = 500
+button3_parameters.font_size = 200
+
 function onLoad()
     block1 = getObjectFromGUID(block1_GUID)
+    block2 = getObjectFromGUID(block2_GUID)
     checker2 = getObjectFromGUID(checker2_GUID)
     block1.createButton(button1_parameters)
-    checker2.createButton(button2_parameters)
+    block2.createButton(button2_parameters)
+    checker2.createButton(button3_parameters)
+
+
 
     die1 = getObjectFromGUID(die1_GUID)
     die2 = getObjectFromGUID(die2_GUID)
@@ -52,6 +69,8 @@ function onLoad()
     deck.shuffle()
 
     scoringZone = getObjectFromGUID(scoringZone_GUID)
+    drawZone = getObjectFromGUID(drawZone_GUID)
+    discardZone = getObjectFromGUID(discardZone_GUID)
 
     Turns.enable = true
 end
@@ -103,6 +122,12 @@ function rollDiceButton()
         unScoredDice = {}
     end
 end
+
+function drawButton()
+    local deck = findDeckInZone(drawZone)
+    cardDrawn = deck.takeObject()
+    cardDrawn.setPosition(discardZone.getPosition())
+end
 --[[
 function onObjectRandomize(object, player_color)
     if object.tag == "Dice" then
@@ -120,7 +145,7 @@ function onObjectDrop(player_color, dropped_object)
     assignPlayerColorToIndex(player_color)
     if dropped_object.tag == "Card" then
         card = dropped_object
-        card.flip()
+
         if card.getName() == "No Dice" then
             noDiceMessage = "NO DICE!"
             broadcastToAll(noDiceMessage, colorIndex[currentPlayer])
@@ -538,6 +563,16 @@ function findDiceInZone(zone)
     else
         return nil
     end
+end
+
+function findDeckInZone(zone)
+    local objectsInZone = zone.getObjects()
+    for i, object in ipairs(objectsInZone) do
+        if object.tag == "Deck" then
+            return object
+        end
+    end
+    return nil
 end
 
 function onPlayerTurnEnd(player_color_end, player_color_next)
