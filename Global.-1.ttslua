@@ -1,5 +1,6 @@
 
-checker_GUID = 'b85973'
+block1_GUID = '4d4cfa'
+checker2_GUID = 'ed90ce'
 
 deck_GUID = '301e95'
 
@@ -12,19 +13,31 @@ die6_GUID = 'd04b38'
 
 scoringZone_GUID = '9c0582'
 
-button_parameters = {}
-button_parameters.click_function = 'resetAndScoreButton'
-button_parameters.function_owner = nil
-button_parameters.label = 'Reset Dice \n & Score'
-button_parameters.position = {0,0.8,0}
-button_parameters.rotation = {0,0,0}
-button_parameters.width = 1000
-button_parameters.height = 500
-button_parameters.font_size = 200
+button1_parameters = {}
+button1_parameters.click_function = 'rollDiceButton'
+button1_parameters.function_owner = nil
+button1_parameters.label = 'Roll Dice'
+button1_parameters.position = {0,0.8,0}
+button1_parameters.rotation = {0,0,0}
+button1_parameters.width = 1000
+button1_parameters.height = 500
+button1_parameters.font_size = 200
+
+button2_parameters = {}
+button2_parameters.click_function = 'keepGoingButton'
+button2_parameters.function_owner = nil
+button2_parameters.label = 'Keep Going'
+button2_parameters.position = {0,0.8,0}
+button2_parameters.rotation = {0,0,0}
+button2_parameters.width = 1000
+button2_parameters.height = 500
+button2_parameters.font_size = 200
 
 function onLoad()
-    checker = getObjectFromGUID(checker_GUID)
-    checker.createButton(button_parameters)
+    block1 = getObjectFromGUID(block1_GUID)
+    checker2 = getObjectFromGUID(checker2_GUID)
+    block1.createButton(button1_parameters)
+    checker2.createButton(button2_parameters)
 
     die1 = getObjectFromGUID(die1_GUID)
     die2 = getObjectFromGUID(die2_GUID)
@@ -40,8 +53,68 @@ function onLoad()
 
     scoringZone = getObjectFromGUID(scoringZone_GUID)
 
+    Turns.enable = true
 end
 
+
+
+function rollDiceButton(objectButtonClicked, playerColorClicked)
+    if card.getName() ~= nil then
+        assignPlayerColorToIndex(Turns.turn_color)
+
+
+
+        if twos ~= nil then
+            for i, guid in ipairs(twos) do
+                table.insert(unScoredDice, twos[i])
+                --table.remove(twos, #twos)
+            end
+        end
+        if threes ~= nil then
+            for i, guid in ipairs(threes) do
+                table.insert(unScoredDice, threes[i])
+                --table.remove(threes, #threes)
+            end
+        end
+        if fours ~= nil then
+            for i, guid in ipairs(fours) do
+                table.insert(unScoredDice, fours[i])
+                --table.remove(fours, #fours)
+            end
+        end
+        if sixes ~= nil then
+            for i, guid in ipairs(sixes) do
+                table.insert(unScoredDice, sixes[i])
+                --table.remove(sixes, #sixes)
+            end
+        end
+
+
+        if #unScoredDice == 0 then
+            clearDiceTables()
+            for i, die in ipairs(dice) do
+                die.randomize()
+                Wait.condition(
+                    function() return sortDie(die) end,
+                    function() return allDiceResting() end
+                )
+            end
+        end
+        if unScoredDice ~= nil then
+            clearDiceTables()
+            for i, guid in ipairs(unScoredDice) do
+                local die = getObjectFromGUID(guid)
+                die.randomize()
+                Wait.condition(
+                    function() return sortDie(die) end,
+                    function() return allDiceResting() end
+                )
+            end
+            unScoredDice = {}
+        end
+    end
+end
+--[[
 function onObjectRandomize(object, player_color)
     if object.tag == "Dice" then
         assignPlayerColorToIndex(player_color)
@@ -52,7 +125,7 @@ function onObjectRandomize(object, player_color)
         )
     end
 end
-
+]]--
 --parameter are incorrectly reversed in documentation
 function onObjectDrop(player_color, dropped_object)
     assignPlayerColorToIndex(player_color)
@@ -96,9 +169,11 @@ fours = {}
 fives = {}
 sixes = {}
 
+fillCount = 0
 scoredDiceCounter = 0
 
 scoredDice = {}
+unScoredDice = {}
 
 tempScore = 0
 score = {}
@@ -328,6 +403,7 @@ function scoreDice()
                 mustBustMessage = "Must Bust Score:"..tempScore
                 broadcastToAll(mustBustMessage, colorIndex[currentPlayer])
                 enableScoring()
+
                 return
             end
         end
@@ -349,33 +425,31 @@ end
 
 function fill()
     if card.getName() ~= nil then
-        fillMessage = "FILL!"
-        broadcastToAll(fillMessage, colorIndex[currentPlayer])
 
         if card.getName() == "Bonus 300" then
-            score[currentPlayer] = score[currentPlayer] + 300
+            tempScore = tempScore + 300
             bonus300Message = "Bonus 300 Awarded!"
             broadcastToAll(bonus300Message, colorIndex[currentPlayer])
         end
         if card.getName() == "Bonus 400" then
-            score[currentPlayer] = score[currentPlayer] + 400
+            tempScore = tempScore + 400
             bonus400Message = "Bonus 400 Awarded!"
             broadcastToAll(bonus400Message, colorIndex[currentPlayer])
         end
         if card.getName() == "Bonus 500" then
-            score[currentPlayer] = score[currentPlayer] + 500
+            tempScore = tempScore + 500
             bonus500Message = "Bonus 500 Awarded!"
             broadcastToAll(bonus500Message, colorIndex[currentPlayer])
         end
         if card.getName() == "Fill 1000" then
-            score[currentPlayer] = score[currentPlayer] + 1000
+            tempScore = tempScore + 1000
             fill1000Message = "Fill 1000 Awarded!"
             broadcastToAll(fill1000Message, colorIndex[currentPlayer])
         end
         if card.getName() == "Double Trouble" then
             fillCount = fillCount + 1
             if fillCount == 2 then
-                score[currentPlayer] = score[currentPlayer] + tempScore * 2
+                tempScore = tempScore + tempScore * 2
                 doubleTroubleMessage = "Double Trouble Awarded!"
                 broadcastToAll(doubleTroubleMessage, colorIndex[currentPlayer])
                 fillCount = 0
@@ -385,9 +459,11 @@ function fill()
             findHighScorePlayer()
             score[highScorePlayer] = score[highScorePlayer] - 2500
         end
+
+        fillMessage = "Temporary Score Subtotal: "..tempScore
+        broadcastToAll(fillMessage, colorIndex[currentPlayer])
     end
 end
-
 
 function moveScoredDie()
     local length = #scoredDice
@@ -466,16 +542,28 @@ function findDiceInZone(zone)
     end
 end
 
-function resetAndScoreButton()
-    score[currentPlayer] = score[currentPlayer] + tempScore
-    scoreMessage = colorIndex[currentPlayer].." Score: "..score[currentPlayer]
-    broadcastToAll(scoreMessage, colorIndex[currentPlayer])
+function onPlayerTurnEnd(player_color_end, player_color_next)
+    if score[currentPlayer] ~= nil then
+        score[currentPlayer] = score[currentPlayer] + tempScore
+        scoreMessage = colorIndex[currentPlayer].." Score: "..score[currentPlayer]
+        broadcastToAll(scoreMessage, colorIndex[currentPlayer])
+    end
     for i=1, 6 do
         dice[i].setLock(false)
         dice[i].setPosition({-3.5 + i, 0, 0})
     end
     clearDiceTables()
     tempScore = 0
+    scoredDiceCounter = 0
+    unScoredDice = {}
+end
+
+function keepGoingButton()
+    for i=1, 6 do
+        dice[i].setLock(false)
+        dice[i].setPosition({-3.5 + i, 0, 0})
+    end
+    clearDiceTables()
     scoredDiceCounter = 0
 end
 
