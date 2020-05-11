@@ -51,7 +51,6 @@ function onLoad()
     block = getObjectFromGUID(block_GUID)
     checker = getObjectFromGUID(checker_GUID)
     block.createButton(combinedButton_parameters)
-    checker.createButton(continueTurnButton_parameters)
 
     die1 = getObjectFromGUID(die1_GUID)
     die2 = getObjectFromGUID(die2_GUID)
@@ -91,7 +90,7 @@ function onObjectDrop(player_color, dropped_object)
         card = dropped_object
 
         checkNoDice()
-        checkMustBust()
+        enableMustBustContinueButton()
 
         block.clearButtons()
         combinedButton_parameters.click_function = 'rollDiceButton'
@@ -143,7 +142,7 @@ function drawButton()
     card.setPositionSmooth(drop)
 
     checkNoDice()
-    checkMustBust()
+    enableMustBustContinueButton()
 
     block.clearButtons()
     combinedButton_parameters.click_function = 'rollDiceButton'
@@ -175,9 +174,10 @@ function continueTurnButton()
     if card.getName() ~= "Must Bust" then
         drawButton()
     end
+    checker.clearButtons()
 end
 
-function checkMustBust()
+function enableMustBustContinueButton()
     if card.getName() == "Must Bust" then
         continueTurnButton_parameters.label = 'Continue Turn \n & \n Reset Dice'
         checker.clearButtons()
@@ -193,8 +193,6 @@ function checkNoDice()
         Turns.turn_color = Turns.getNextTurnColor()
     end
 end
-
-
 
 colorIndex = {"White", "Red", "Yellow", "Green", "Blue", "Pink"}
 
@@ -517,6 +515,7 @@ end
 
 function fill()
     if card.getName() ~= nil then
+        checker.createButton(continueTurnButton_parameters)
 
         if card.getName() == "Bonus 300" then
             tempScore = tempScore + 300
@@ -591,6 +590,7 @@ function moveScoredDice()
         scoredDiceCounter = scoredDiceCounter + 1
         if scoredDiceCounter == 6 then
             fill()
+            enableMustBustContinueButton()
         end
     end
     Wait.time(enableMoving, 3)
