@@ -75,6 +75,7 @@ function onLoad()
 end
 
 --BROKEN LOGIC FOR ROLL DICE BUTTON
+--[[
 function rollDiceButton()
     assignPlayerColorToIndex(Turns.turn_color)
 
@@ -122,6 +123,8 @@ function rollDiceButton()
         unScoredDice = {}
     end
 end
+]]--
+
 
 function drawButton()
     local deck = findDeckInZone(drawZone)
@@ -138,7 +141,11 @@ function drawButton()
     card.setPosition(drop)
     Wait.time(|| card.flip(), 0.5)
 
-    
+    if card.getName() == "No Dice" then
+        noDiceMessage = "NO DICE!"
+        broadcastToAll(noDiceMessage, colorIndex[currentPlayer])
+        tempScore = 0
+    end
 end
 
 --WORKS AS INTENDED
@@ -272,20 +279,29 @@ function scoreDice()
     end
 
     scoringEnabled = false
-    --AND operator maybe not working how I think
-    --[[
-    if #ones == 1 and #twos == 1 and #threes == 1 and #fours == 1 and #fives == 1 and #sixes == 1 then
-        tempScore = tempScore + 1500
-        table.insert(scoredDice, ones[1])
-        table.insert(scoredDice, twos[1])
-        table.insert(scoredDice, threes[1])
-        table.insert(scoredDice, fours[1])
-        table.insert(scoredDice, fives[1])
-        table.insert(scoredDice, sixes[1])
-        straightMessage = "STRAIGHT!"
-        broadcastToAll(straightMessage, colorIndex[currentPlayer])
+
+    if #ones == 1 then
+        if #twos == 1 then
+            if #threes == 1 then
+                if #fours == 1 then
+                    if #fives == 1 then
+                        if #sixes == 1 then
+                            tempScore = tempScore + 1500
+                            table.insert(scoredDice, ones[1])
+                            table.insert(scoredDice, twos[1])
+                            table.insert(scoredDice, threes[1])
+                            table.insert(scoredDice, fours[1])
+                            table.insert(scoredDice, fives[1])
+                            table.insert(scoredDice, sixes[1])
+                            straightMessage = "STRAIGHT!"
+                            broadcastToAll(straightMessage, colorIndex[currentPlayer])
+                        end
+                    end
+                end
+            end
+        end
     end
-    ]]--
+
     if #ones == 6 then
         tempScore = tempScore + 2000
         for i=1, 6 do
@@ -464,15 +480,19 @@ function fill()
         if card.getName() == "Double Trouble" then
             fillCount = fillCount + 1
             if fillCount == 2 then
-                tempScore = tempScore + tempScore * 2
+                tempScore = tempScore * 2
                 doubleTroubleMessage = "Double Trouble Awarded!"
                 broadcastToAll(doubleTroubleMessage, colorIndex[currentPlayer])
                 fillCount = 0
+                score[currentPlayer] = score[currentPlayer] + tempScore
             end
         end
         if card.getName() == "Vengeance 2500" then
             findHighScorePlayer()
             score[highScorePlayer] = score[highScorePlayer] - 2500
+            vengeanceMessage = "Vengeance 2500! \n Highest Score Lost 2500"
+            broadcastToAll(vengeanceMessage, colorIndex[currentPlayer])
+            score[currentPlayer] = score[currentPlayer] + tempScore
         end
 
         fillMessage = "Temporary Score Subtotal: "..tempScore
