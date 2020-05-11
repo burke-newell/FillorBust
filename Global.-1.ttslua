@@ -14,6 +14,7 @@ die6_GUID = 'd04b38'
 scoringZone_GUID = '9c0582'
 drawZone_GUID = '9c940c'
 discardZone_GUID = '947020'
+rollingZone_GUID = '134972'
 
 button1_parameters = {}
 button1_parameters.click_function = 'rollDiceButton'
@@ -67,64 +68,13 @@ function onLoad()
     scoringZone = getObjectFromGUID(scoringZone_GUID)
     drawZone = getObjectFromGUID(drawZone_GUID)
     discardZone = getObjectFromGUID(discardZone_GUID)
+    rollingZone = getObjectFromGUID(rollingZone_GUID)
 
     Turns.enable = true
 
     deck = findDeckInZone(drawZone)
     deck.shuffle()
 end
-
---BROKEN LOGIC FOR ROLL DICE BUTTON
---[[
-function rollDiceButton()
-    assignPlayerColorToIndex(Turns.turn_color)
-
-    if twos ~= nil then
-        for i, guid in ipairs(twos) do
-            table.insert(unScoredDice, twos[i])
-        end
-    end
-    if threes ~= nil then
-        for i, guid in ipairs(threes) do
-            table.insert(unScoredDice, threes[i])
-        end
-    end
-    if fours ~= nil then
-        for i, guid in ipairs(fours) do
-            table.insert(unScoredDice, fours[i])
-        end
-    end
-    if sixes ~= nil then
-        for i, guid in ipairs(sixes) do
-            table.insert(unScoredDice, sixes[i])
-        end
-    end
-
-    if #unScoredDice == 0 then
-        clearDiceTables()
-        for i, die in ipairs(dice) do
-            die.randomize()
-            Wait.condition(
-                function() return sortDie(die) end,
-                function() return allDiceResting() end
-            )
-        end
-    end
-    if unScoredDice ~= nil then
-        clearDiceTables()
-        for i, guid in ipairs(unScoredDice) do
-            local die = getObjectFromGUID(guid)
-            die.randomize()
-            Wait.condition(
-                function() return sortDie(die) end,
-                function() return allDiceResting() end
-            )
-        end
-        unScoredDice = {}
-    end
-end
-]]--
-
 
 function drawButton()
     local deck = findDeckInZone(drawZone)
@@ -160,6 +110,21 @@ function onObjectRandomize(object, player_color)
     end
 end
 
+function rollDiceButton()
+    clearDiceTables()
+    assignPlayerColorToIndex(Turns.turn_color)
+
+    for i, die in ipairs(findDiceInZone(rollingZone)) do
+        die.roll()
+        Wait.condition(
+            function() return sortDie(die) end,
+            function() return allDiceResting() end
+        )
+    end
+
+end
+
+
 colorIndex = {"White", "Red", "Yellow", "Green", "Blue", "Pink"}
 
 function assignPlayerColorToIndex(player_color)
@@ -194,7 +159,6 @@ fillCount = 0
 scoredDiceCounter = 0
 
 scoredDice = {}
-unScoredDice = {}
 
 tempScore = 0
 score = {}
@@ -610,7 +574,6 @@ function onPlayerTurnEnd(player_color_end, player_color_next)
     clearDiceTables()
     tempScore = 0
     scoredDiceCounter = 0
-    unScoredDice = {}
 end
 
 function keepGoingButton()
