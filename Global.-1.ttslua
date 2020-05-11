@@ -90,6 +90,7 @@ function onObjectDrop(player_color, dropped_object)
         card = dropped_object
 
         checkNoDice()
+        checkVengeance2500()
         enableMustBustContinueButton()
 
         block.clearButtons()
@@ -119,6 +120,7 @@ function onPlayerTurnEnd(player_color_end, player_color_next)
     clearDiceTables()
     tempScore = 0
     scoredDiceCounter = 0
+    checker.clearButtons()
 end
 --END GLOBAL API EVENT SECTION--
 
@@ -142,6 +144,7 @@ function drawButton()
     card.setPositionSmooth(drop)
 
     checkNoDice()
+    checkVengeance2500()
     enableMustBustContinueButton()
 
     block.clearButtons()
@@ -162,6 +165,17 @@ function rollDiceButton()
         )
     end
 
+end
+
+function takeThePointsButton()
+    checker.clearButtons()
+    continueTurnButton_parameters.click_function = 'endTurn'
+    continueTurnButton_parameters.label = 'Take the Points \n & \n End Turn'
+    checker.createButton(continueTurnButton_parameters)
+end
+
+function endTurn()
+    Turns.turn_color = Turns.getNextTurnColor()
 end
 
 function continueTurnButton()
@@ -190,7 +204,13 @@ function checkNoDice()
         noDiceMessage = "NO DICE!"
         broadcastToAll(noDiceMessage, colorIndex[currentPlayer])
         tempScore = 0
-        Turns.turn_color = Turns.getNextTurnColor()
+        endTurn()
+    end
+end
+
+function checkVengeance2500()
+    if card.getName() == "Vengeance 2500" then
+        checker.createButton(continueTurnButton_parameters)
     end
 end
 
@@ -462,6 +482,7 @@ function scoreDice()
     end
 
     checkBust()
+    takeThePointsButton()
 
     tempScoreMessage = colorIndex[currentPlayer].." Temporary Score: "..tempScore
     broadcastToAll(tempScoreMessage, colorIndex[currentPlayer])
@@ -490,7 +511,7 @@ function checkBust()
         broadcastToAll(bustMessage, colorIndex[currentPlayer])
         tempScore = 0
         scoredDiceCounter = 0
-        Turns.turn_color = Turns.getNextTurnColor()
+        endTurn()
     end
 end
 
