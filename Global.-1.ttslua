@@ -36,15 +36,15 @@ button2_parameters.width = 1000
 button2_parameters.height = 500
 button2_parameters.font_size = 200
 
-button3_parameters = {}
-button3_parameters.click_function = 'keepGoingButton'
-button3_parameters.function_owner = nil
-button3_parameters.label = 'Keep Going'
-button3_parameters.position = {0,0.8,0}
-button3_parameters.rotation = {0,0,0}
-button3_parameters.width = 1000
-button3_parameters.height = 500
-button3_parameters.font_size = 200
+continueTurnButton_parameters = {}
+continueTurnButton_parameters.click_function = 'continueTurnButton'
+continueTurnButton_parameters.function_owner = nil
+continueTurnButton_parameters.label = 'Continue Turn \n & \n Draw Another Card'
+continueTurnButton_parameters.position = {0,0.8,0}
+continueTurnButton_parameters.rotation = {0,0,0}
+continueTurnButton_parameters.width = 2000
+continueTurnButton_parameters.height = 800
+continueTurnButton_parameters.font_size = 200
 
 function onLoad()
     block1 = getObjectFromGUID(block1_GUID)
@@ -52,7 +52,7 @@ function onLoad()
     checker2 = getObjectFromGUID(checker2_GUID)
     block1.createButton(button1_parameters)
     block2.createButton(button2_parameters)
-    checker2.createButton(button3_parameters)
+    checker2.createButton(continueTurnButton_parameters)
 
 
 
@@ -71,34 +71,13 @@ function onLoad()
     rollingZone = getObjectFromGUID(rollingZone_GUID)
 
     Turns.enable = true
+    Turns.disable_interactations = true
+    Turns.pass_turns = false
 
     deck = findDeckInZone(drawZone)
     deck.shuffle()
 end
 
-function drawButton()
-    local deck = findDeckInZone(drawZone)
-    if deck == nil then
-        card = findCardInZone(drawZone)
-    end
-    if deck ~= nil then
-        card = deck.takeObject()
-    end
-
-    drop = discardZone.getPosition()
-    drop["y"] = drop["y"] + 1
-
-    card.setPosition(drop)
-    Wait.time(|| card.flip(), 0.5)
-
-    if card.getName() == "No Dice" then
-        noDiceMessage = "NO DICE!"
-        broadcastToAll(noDiceMessage, colorIndex[currentPlayer])
-        tempScore = 0
-    end
-end
-
---WORKS AS INTENDED
 function onObjectRandomize(object, player_color)
     if object.tag == "Dice" then
         assignPlayerColorToIndex(player_color)
@@ -108,6 +87,40 @@ function onObjectRandomize(object, player_color)
             function() return allDiceResting() end
         )
     end
+end
+
+function onObjectLeaveContainer(container, leave_object)
+    if container.tag == "Deck" then
+        local deck = findDeckInZone(drawZone)
+        if deck ~= nil then
+            card = leave_object
+        end
+    end
+end
+
+function drawButton()
+    local deck = findDeckInZone(drawZone)
+    if deck == nil then
+        card = findCardInZone(drawZone)
+        local discardDeck = findDeckInZone(discardZone)
+        discardDeck.setPosition(drawZone.getPosition())
+        discardDeck.flip()
+        discardDeck.shuffle()
+    end
+    if deck ~= nil then
+        card = deck.takeObject()
+    end
+
+    drop = discardZone.getPosition()
+    drop["y"] = drop["y"] + 2
+
+    card.setRotation({x=0 ,y=180, z=0})
+    card.setPosition(drop)
+    --Wait.time(|| card.flip(), 0.5)
+
+    checkNoDice()
+    checkMustBust()
+
 end
 
 function rollDiceButton()
@@ -123,6 +136,37 @@ function rollDiceButton()
     end
 
 end
+
+function continueTurnButton()
+    for i=1, 6 do
+        dice[i].setLock(false)
+        dice[i].setPosition({-3.5 + i, 0, 0})
+    end
+    clearDiceTables()
+    scoredDiceCounter = 0
+    if card.getName() ~= "Must Bust" then
+        drawButton()
+    end
+end
+
+--NEED TO FINISH
+function checkMustBust()
+    if card.getName() == "Must Bust" then
+        continueTurnButton_parameters.label = 'Continue Turn'
+        checker2.clearButtons()
+        checker2.createButton(continueTurnButton_parameters)
+    end
+end
+
+function checkNoDice()
+    if card.getName() == "No Dice" then
+        noDiceMessage = "NO DICE!"
+        broadcastToAll(noDiceMessage, colorIndex[currentPlayer])
+        tempScore = 0
+        Turns.turn_color = Turns.getNextTurnColor()
+    end
+end
+
 
 
 colorIndex = {"White", "Red", "Yellow", "Green", "Blue", "Pink"}
@@ -392,6 +436,19 @@ function scoreDice()
         end
     end
 
+    checkBust()
+
+    tempScoreMessage = colorIndex[currentPlayer].." Temporary Score: "..tempScore
+    broadcastToAll(tempScoreMessage, colorIndex[currentPlayer])
+
+    Wait.time(enableScoring, 3)
+end
+
+function enableScoring()
+    scoringEnabled = true
+end
+
+function checkBust()
     if #scoredDice == 0 then
         if card.getName() ~= nil then
             if card.getName() == "Must Bust" then
@@ -407,15 +464,6 @@ function scoreDice()
         tempScore = 0
         scoredDiceCounter = 0
     end
-
-    tempScoreMessage = colorIndex[currentPlayer].." Temporary Score: "..tempScore
-    broadcastToAll(tempScoreMessage, colorIndex[currentPlayer])
-
-    Wait.time(enableScoring, 3)
-end
-
-function enableScoring()
-    scoringEnabled = true
 end
 
 function fill()
@@ -576,14 +624,7 @@ function onPlayerTurnEnd(player_color_end, player_color_next)
     scoredDiceCounter = 0
 end
 
-function keepGoingButton()
-    for i=1, 6 do
-        dice[i].setLock(false)
-        dice[i].setPosition({-3.5 + i, 0, 0})
-    end
-    clearDiceTables()
-    scoredDiceCounter = 0
-end
+
 
 function findHighScorePlayer()
     highScorePlayer = (max(score, function(a,b) return a < b end))
