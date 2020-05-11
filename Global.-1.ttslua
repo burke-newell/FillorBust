@@ -111,12 +111,11 @@ function drawButton()
         card = deck.takeObject()
     end
 
-    drop = discardZone.getPosition()
-    drop["y"] = drop["y"] + 2
+    local drop = discardZone.getPosition()
+    drop["y"] = drop["y"] + 1
 
     card.setRotation({x=0 ,y=180, z=0})
-    card.setPosition(drop)
-    --Wait.time(|| card.flip(), 0.5)
+    card.setPositionSmooth(drop)
 
     checkNoDice()
     checkMustBust()
