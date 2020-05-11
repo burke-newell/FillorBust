@@ -124,6 +124,7 @@ function onPlayerTurnEnd(player_color_end, player_color_next)
 end
 --END GLOBAL API EVENT SECTION--
 
+--START BUTTON SECTION--
 function drawButton()
     local deck = findDeckInZone(drawZone)
     if deck == nil then
@@ -168,14 +169,22 @@ function rollDiceButton()
 end
 
 function takeThePointsButton()
-    checker.clearButtons()
-    continueTurnButton_parameters.click_function = 'endTurn'
-    continueTurnButton_parameters.label = 'Take the Points \n & \n End Turn'
-    checker.createButton(continueTurnButton_parameters)
-end
+    if card.getName() == "Vengeance 2500" then
+        checker.clearButtons()
+    end
 
-function endTurn()
-    Turns.turn_color = Turns.getNextTurnColor()
+    if card.getName() ~= "Must Bust" then
+        if card.getName() ~= "Fill 1000" then
+            if card.getName() ~= "Double Trouble" then
+                if card.getName() ~= "Vengeance 2500" then
+                    checker.clearButtons()
+                    continueTurnButton_parameters.click_function = 'endTurn'
+                    continueTurnButton_parameters.label = 'Take the Points \n & \n End Turn'
+                    checker.createButton(continueTurnButton_parameters)
+                end
+            end
+        end
+    end
 end
 
 function continueTurnButton()
@@ -197,6 +206,11 @@ function enableMustBustContinueButton()
         checker.clearButtons()
         checker.createButton(continueTurnButton_parameters)
     end
+end
+--END BUTTON SECTION--
+
+function endTurn()
+    Turns.turn_color = Turns.getNextTurnColor()
 end
 
 function checkNoDice()
