@@ -1,6 +1,6 @@
-block1_GUID = '4d4cfa'
-block2_GUID = 'c0cf84'
-checker2_GUID = 'ed90ce'
+
+block_GUID = 'c0cf84'
+checker_GUID = 'ed90ce'
 
 deck_GUID = '301e95'
 
@@ -26,15 +26,15 @@ button1_parameters.width = 1000
 button1_parameters.height = 500
 button1_parameters.font_size = 200
 
-button2_parameters = {}
-button2_parameters.click_function = 'drawButton'
-button2_parameters.function_owner = nil
-button2_parameters.label = 'Draw Card'
-button2_parameters.position = {0,0.8,0}
-button2_parameters.rotation = {0,0,0}
-button2_parameters.width = 1000
-button2_parameters.height = 500
-button2_parameters.font_size = 200
+combinedButton_parameters = {}
+combinedButton_parameters.click_function = 'drawButton'
+combinedButton_parameters.function_owner = nil
+combinedButton_parameters.label = 'Draw Card'
+combinedButton_parameters.position = {0,0.8,0}
+combinedButton_parameters.rotation = {0,0,0}
+combinedButton_parameters.width = 1000
+combinedButton_parameters.height = 500
+combinedButton_parameters.font_size = 200
 
 continueTurnButton_parameters = {}
 continueTurnButton_parameters.click_function = 'continueTurnButton'
@@ -46,15 +46,12 @@ continueTurnButton_parameters.width = 2000
 continueTurnButton_parameters.height = 800
 continueTurnButton_parameters.font_size = 200
 
+--START GLOBAL API EVENT SECTION--
 function onLoad()
-    block1 = getObjectFromGUID(block1_GUID)
-    block2 = getObjectFromGUID(block2_GUID)
-    checker2 = getObjectFromGUID(checker2_GUID)
-    block1.createButton(button1_parameters)
-    block2.createButton(button2_parameters)
-    checker2.createButton(continueTurnButton_parameters)
-
-
+    block = getObjectFromGUID(block_GUID)
+    checker = getObjectFromGUID(checker_GUID)
+    block.createButton(combinedButton_parameters)
+    checker.createButton(continueTurnButton_parameters)
 
     die1 = getObjectFromGUID(die1_GUID)
     die2 = getObjectFromGUID(die2_GUID)
@@ -89,14 +86,42 @@ function onObjectRandomize(object, player_color)
     end
 end
 
-function onObjectLeaveContainer(container, leave_object)
-    if container.tag == "Deck" then
-        local deck = findDeckInZone(drawZone)
-        if deck ~= nil then
-            card = leave_object
-        end
+function onObjectDrop(player_color, dropped_object)
+    if dropped_object.tag == "Card" then
+        card = dropped_object
+
+        checkNoDice()
+        checkMustBust()
+
+        block.clearButtons()
+        combinedButton_parameters.click_function = 'rollDiceButton'
+        combinedButton_parameters.label = 'Roll Dice'
+        block.createButton(combinedButton_parameters)
     end
 end
+
+function onPlayerTurnStart(player_color_start, player_color_previous)
+    block.clearButtons()
+    combinedButton_parameters.click_function = 'drawButton'
+    combinedButton_parameters.label = 'Draw Card'
+    block.createButton(combinedButton_parameters)
+end
+
+function onPlayerTurnEnd(player_color_end, player_color_next)
+    if score[currentPlayer] ~= nil then
+        score[currentPlayer] = score[currentPlayer] + tempScore
+        scoreMessage = colorIndex[currentPlayer].." Score: "..score[currentPlayer]
+        broadcastToAll(scoreMessage, colorIndex[currentPlayer])
+    end
+    for i=1, 6 do
+        dice[i].setLock(false)
+        dice[i].setPosition({-3.5 + i, 0, 0})
+    end
+    clearDiceTables()
+    tempScore = 0
+    scoredDiceCounter = 0
+end
+--END GLOBAL API EVENT SECTION--
 
 function drawButton()
     local deck = findDeckInZone(drawZone)
@@ -120,6 +145,10 @@ function drawButton()
     checkNoDice()
     checkMustBust()
 
+    block.clearButtons()
+    combinedButton_parameters.click_function = 'rollDiceButton'
+    combinedButton_parameters.label = 'Roll Dice'
+    block.createButton(combinedButton_parameters)
 end
 
 function rollDiceButton()
@@ -148,12 +177,11 @@ function continueTurnButton()
     end
 end
 
---NEED TO FINISH
 function checkMustBust()
     if card.getName() == "Must Bust" then
-        continueTurnButton_parameters.label = 'Continue Turn'
-        checker2.clearButtons()
-        checker2.createButton(continueTurnButton_parameters)
+        continueTurnButton_parameters.label = 'Continue Turn \n & \n Reset Dice'
+        checker.clearButtons()
+        checker.createButton(continueTurnButton_parameters)
     end
 end
 
@@ -451,10 +479,12 @@ function checkBust()
     if #scoredDice == 0 then
         if card.getName() ~= nil then
             if card.getName() == "Must Bust" then
-                mustBustMessage = "Must Bust Score:"..tempScore
-                broadcastToAll(mustBustMessage, colorIndex[currentPlayer])
+                broadcastMustBust()
                 enableScoring()
 
+                checker.clearButtons()
+                continueTurnButton_parameters.label = 'Continue Turn \n & \n Draw Another Card'
+                checker.createButton(continueTurnButton_parameters)
                 return
             end
         end
@@ -462,7 +492,27 @@ function checkBust()
         broadcastToAll(bustMessage, colorIndex[currentPlayer])
         tempScore = 0
         scoredDiceCounter = 0
+        Turns.turn_color = Turns.getNextTurnColor()
     end
+end
+
+broadcastMustBustDebouncer = true
+
+function broadcastMustBust()
+    if broadcastMustBustDebouncer ~= true then
+        return
+    end
+
+    broadcastMustBustDebouncer = false
+
+    mustBustMessage = "Must Bust Score:"..tempScore
+    broadcastToAll(mustBustMessage, colorIndex[currentPlayer])
+
+    Wait.time(enableMustBustBroadcast, 3)
+end
+
+function enableMustBustBroadcast()
+    broadcastMustBustDebouncer = true
 end
 
 function fill()
@@ -607,23 +657,6 @@ function findCardInZone(zone)
     end
     return nil
 end
-
-function onPlayerTurnEnd(player_color_end, player_color_next)
-    if score[currentPlayer] ~= nil then
-        score[currentPlayer] = score[currentPlayer] + tempScore
-        scoreMessage = colorIndex[currentPlayer].." Score: "..score[currentPlayer]
-        broadcastToAll(scoreMessage, colorIndex[currentPlayer])
-    end
-    for i=1, 6 do
-        dice[i].setLock(false)
-        dice[i].setPosition({-3.5 + i, 0, 0})
-    end
-    clearDiceTables()
-    tempScore = 0
-    scoredDiceCounter = 0
-end
-
-
 
 function findHighScorePlayer()
     highScorePlayer = (max(score, function(a,b) return a < b end))
