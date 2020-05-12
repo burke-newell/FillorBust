@@ -61,6 +61,13 @@ function onLoad()
     die5 = getObjectFromGUID(die5_GUID)
     die6 = getObjectFromGUID(die6_GUID)
 
+    die1.bounciness = 0.75
+    die2.bounciness = 0.75
+    die3.bounciness = 0.75
+    die4.bounciness = 0.75
+    die5.bounciness = 0.75
+    die6.bounciness = 0.75
+
     dice = {die1, die2, die3, die4, die5, die6}
 
     scoringZone = getObjectFromGUID(scoringZone_GUID)
@@ -84,8 +91,13 @@ function onUpdate()
     UI.setValue("player2score", "Red Score: "..score[2])
     UI.setValue("player3score", "Yellow Score: "..score[3])
     UI.setValue("player4score", "Green Score: "..score[4])
-    UI.setValue("player5score", "Blue Score: "..score[5])
-    UI.setValue("player6score", "Pink Score: "..score[6])
+
+    findHighScorePlayer()
+    if highScorePlayer ~= nil then
+        UI.setValue("player5score", "Blue Score: "..highScorePlayer)
+    end
+
+    UI.setValue("player6score", "Pink Score: "..fillCount)
 end
 
 function onObjectRandomize(object, player_color)
@@ -168,7 +180,7 @@ end
 
 function checkVengeance2500()
     if card.getName() == "Vengeance 2500" then
-        if score[currentPlayer] == highScorePlayer then
+        if currentPlayer == highScorePlayer then
             Wait.time(drawButton, 2)
             skipVengeanceMessage = "Skipped Vengeance 2500"
             broadcastToAll(skipVengeanceMessage, colorIndex[currentPlayer])
@@ -555,31 +567,6 @@ function enableScoring()
     scoringEnabled = true
 end
 
-
-
-function checkBust()
-    if #scoredDice == 0 then
-        if card.getName() ~= nil then
-            if card.getName() == "Must Bust" then
-                broadcastMustBust()
-                enableScoring()
-
-                checker.clearButtons()
-                block.clearButtons()
-                continueTurnButton_parameters.label = 'End Turn'
-                continueTurnButton_parameters.click_function = 'endTurn'
-                checker.createButton(continueTurnButton_parameters)
-                return
-            end
-        end
-        bustMessage = "BUST!"
-        broadcastToAll(bustMessage, colorIndex[currentPlayer])
-        tempScore = 0
-        scoredDiceCounter = 0
-        endTurn()
-    end
-end
-
 broadcastMustBustDebouncer = true
 
 function broadcastMustBust()
@@ -618,38 +605,68 @@ function enableBroadcastTempScoreDebouncer()
     broadcastTempScoreDebouncer = true
 end
 
+function checkBust()
+    if #scoredDice == 0 then
+        if card.getName() ~= nil then
+            if card.getName() == "Must Bust" then
+                broadcastMustBust()
+                enableScoring()
+
+                Wait.time(endTurn, 1)
+                fillCount = 0
+                return
+            end
+        end
+        bustMessage = "BUST!"
+        broadcastToAll(bustMessage, colorIndex[currentPlayer])
+        tempScore = 0
+        scoredDiceCounter = 0
+        fillCount = 0
+
+        Wait.time(endTurn, 1)
+    end
+end
+
 function fill()
     if card.getName() ~= nil then
+        fillCount = fillCount + 1
 
         if card.getName() == "Bonus 300" then
             tempScore = tempScore + 300
             bonus300Message = "Bonus 300 Awarded!"
             broadcastToAll(bonus300Message, colorIndex[currentPlayer])
+            fillCount = 0
         end
         if card.getName() == "Bonus 400" then
             tempScore = tempScore + 400
             bonus400Message = "Bonus 400 Awarded!"
             broadcastToAll(bonus400Message, colorIndex[currentPlayer])
+            fillCount = 0
         end
         if card.getName() == "Bonus 500" then
             tempScore = tempScore + 500
             bonus500Message = "Bonus 500 Awarded!"
             broadcastToAll(bonus500Message, colorIndex[currentPlayer])
+            fillCount = 0
         end
         if card.getName() == "Fill 1000" then
             tempScore = tempScore + 1000
             fill1000Message = "Fill 1000 Awarded!"
             broadcastToAll(fill1000Message, colorIndex[currentPlayer])
+            fillCount = 0
         end
         if card.getName() == "Double Trouble" then
-            fillCount = fillCount + 1
             if fillCount == 2 then
                 tempScore = tempScore * 2
+                score[currentPlayer] = score[currentPlayer] + tempScore
+
                 doubleTroubleMessage = "Double Trouble Awarded!"
                 broadcastToAll(doubleTroubleMessage, colorIndex[currentPlayer])
-                fillCount = 0
-                score[currentPlayer] = score[currentPlayer] + tempScore
+
                 createTakeThePointsButton()
+                createTakeAChanceButton()
+
+                fillCount = 0
             end
         end
         if card.getName() == "Vengeance 2500" then
@@ -658,6 +675,7 @@ function fill()
             vengeanceMessage = "Vengeance 2500! \n Subtracted 2500 from the Leader's Score"
             broadcastToAll(vengeanceMessage, colorIndex[currentPlayer])
             score[currentPlayer] = score[currentPlayer] + tempScore
+            fillCount = 0
         end
 
         fillMessage = "Temporary Score Subtotal: "..tempScore
@@ -669,7 +687,7 @@ function fill()
                 createTakeAChanceButton()
             end
         end
-        
+
     end
 end
 
