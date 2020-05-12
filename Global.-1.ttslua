@@ -32,9 +32,11 @@ combinedButton_parameters.function_owner = nil
 combinedButton_parameters.label = 'Draw Card'
 combinedButton_parameters.position = {0,0.8,0}
 combinedButton_parameters.rotation = {0,0,0}
-combinedButton_parameters.width = 1000
+combinedButton_parameters.width = 800
 combinedButton_parameters.height = 500
-combinedButton_parameters.font_size = 200
+combinedButton_parameters.color = {1, 0, 0}
+combinedButton_parameters.font_size = 100
+combinedButton_parameters.font_color = {255 ,255, 255}
 
 continueTurnButton_parameters = {}
 continueTurnButton_parameters.click_function = 'continueTurnButton'
@@ -101,7 +103,6 @@ function onObjectDrop(player_color, dropped_object)
 
         checkNoDice()
         checkVengeance2500()
-        enableMustBustContinueButton()
 
         block.clearButtons()
         combinedButton_parameters.click_function = 'rollDiceButton'
@@ -120,8 +121,6 @@ end
 function onPlayerTurnEnd(player_color_end, player_color_next)
     if score[currentPlayer] ~= nil then
         score[currentPlayer] = score[currentPlayer] + tempScore
-        scoreMessage = colorIndex[currentPlayer].." Score: "..score[currentPlayer]
-        broadcastToAll(scoreMessage, colorIndex[currentPlayer])
     end
     for i=1, 6 do
         dice[i].setLock(false)
@@ -136,6 +135,7 @@ end
 
 --START BUTTON SECTION--
 function drawButton()
+    checker.clearButtons()
     local deck = findDeckInZone(drawZone)
     if deck == nil then
         card = findCardInZone(drawZone)
@@ -155,8 +155,7 @@ function drawButton()
     card.setPositionSmooth(drop)
 
     checkNoDice()
-    checkVengeance2500()
-    enableMustBustContinueButton()
+
 
     block.clearButtons()
     combinedButton_parameters.click_function = 'rollDiceButton'
@@ -165,9 +164,28 @@ function drawButton()
 end
 
 function rollDiceButton()
-    clearDiceTables()
-    assignPlayerColorToIndex(Turns.turn_color)
+    if allDiceResting() == true then
 
+        clearDiceTables()
+        assignPlayerColorToIndex(Turns.turn_color)
+
+        if findDiceInZone(rollingZone) == nil then
+            for i, die in ipairs(findDiceInZone(scoringZone)) do
+                die.setLock(false)
+                die.setPosition({-3.5 + i, 0, 0})
+            end
+            Wait.condition(
+                function() return rollDice() end,
+                function() return allDiceResting() end
+            )
+            return
+        end
+
+        rollDice()
+    end
+end
+
+function rollDice()
     for i, die in ipairs(findDiceInZone(rollingZone)) do
         die.roll()
         Wait.condition(
@@ -175,26 +193,20 @@ function rollDiceButton()
             function() return allDiceResting() end
         )
     end
-
 end
 
-function takeThePointsButton()
-    if card.getName() == "Vengeance 2500" then
-        checker.clearButtons()
-    end
+function createTakeThePointsButton()
+    checker.clearButtons()
+    continueTurnButton_parameters.click_function = 'endTurn'
+    continueTurnButton_parameters.label = 'Take the Points \n & \n End the Turn'
+    checker.createButton(continueTurnButton_parameters)
+end
 
-    if card.getName() ~= "Must Bust" then
-        if card.getName() ~= "Fill 1000" then
-            if card.getName() ~= "Double Trouble" then
-                if card.getName() ~= "Vengeance 2500" then
-                    checker.clearButtons()
-                    continueTurnButton_parameters.click_function = 'endTurn'
-                    continueTurnButton_parameters.label = 'Take the Points \n & \n End Turn'
-                    checker.createButton(continueTurnButton_parameters)
-                end
-            end
-        end
-    end
+function createTakeAChanceButton()
+        block.clearButtons()
+        combinedButton_parameters.click_function = 'drawButton'
+        combinedButton_parameters.label = 'Take a Chance \n & \n Draw a Card'
+        block.createButton(combinedButton_parameters)
 end
 
 function continueTurnButton()
@@ -210,11 +222,13 @@ function continueTurnButton()
     checker.clearButtons()
 end
 
-function enableMustBustContinueButton()
+function mustBustFillReset()
     if card.getName() == "Must Bust" then
-        continueTurnButton_parameters.label = 'Continue Turn \n & \n Reset Dice'
         checker.clearButtons()
-        checker.createButton(continueTurnButton_parameters)
+        for i=1, 6 do
+            dice[i].setLock(false)
+            dice[i].setPosition({-3.5 + i, 0, 0})
+        end
     end
 end
 --END BUTTON SECTION--
@@ -229,12 +243,6 @@ function checkNoDice()
         broadcastToAll(noDiceMessage, colorIndex[currentPlayer])
         tempScore = 0
         endTurn()
-    end
-end
-
-function checkVengeance2500()
-    if card.getName() == "Vengeance 2500" then
-        checker.createButton(continueTurnButton_parameters)
     end
 end
 
@@ -506,10 +514,18 @@ function scoreDice()
     end
 
     checkBust()
-    takeThePointsButton()
 
-    tempScoreMessage = colorIndex[currentPlayer].." Temporary Score: "..tempScore
-    broadcastToAll(tempScoreMessage, colorIndex[currentPlayer])
+    if card.getName() ~= "Fill 1000" then
+        if card.getName() ~= "Must Bust" then
+            if card.getName() ~= "Double Trouble" then
+                if card.getName() ~= "Vengeance 2500" then
+                    createTakeThePointsButton()
+                end
+            end
+        end
+    end
+
+    broadcastTempScore()
 
     Wait.time(enableScoring, 3)
 end
@@ -517,6 +533,8 @@ end
 function enableScoring()
     scoringEnabled = true
 end
+
+
 
 function checkBust()
     if #scoredDice == 0 then
@@ -526,7 +544,8 @@ function checkBust()
                 enableScoring()
 
                 checker.clearButtons()
-                continueTurnButton_parameters.label = 'Continue Turn \n & \n Draw Another Card'
+                continueTurnButton_parameters.label = 'End Turn'
+                continueTurnButton_parameters.click_function = 'endTurn'
                 checker.createButton(continueTurnButton_parameters)
                 return
             end
@@ -548,7 +567,7 @@ function broadcastMustBust()
 
     broadcastMustBustDebouncer = false
 
-    mustBustMessage = "Must Bust Score:"..tempScore
+    mustBustMessage = "BUSTED!"
     broadcastToAll(mustBustMessage, colorIndex[currentPlayer])
 
     Wait.time(enableMustBustBroadcast, 3)
@@ -558,9 +577,27 @@ function enableMustBustBroadcast()
     broadcastMustBustDebouncer = true
 end
 
+broadcastTempScoreDebouncer = true
+
+function broadcastTempScore()
+    if broadcastTempScoreDebouncer ~= true then
+        return
+    end
+
+    broadcastTempScoreDebouncer = false
+
+    tempScoreMessage = colorIndex[currentPlayer].." Temporary Score: "..tempScore
+    broadcastToAll(tempScoreMessage, colorIndex[currentPlayer])
+
+    Wait.time(enableBroadcastTempScoreDebouncer, 3)
+end
+
+function enableBroadcastTempScoreDebouncer()
+    broadcastTempScoreDebouncer = true
+end
+
 function fill()
     if card.getName() ~= nil then
-        checker.createButton(continueTurnButton_parameters)
 
         if card.getName() == "Bonus 300" then
             tempScore = tempScore + 300
@@ -590,18 +627,29 @@ function fill()
                 broadcastToAll(doubleTroubleMessage, colorIndex[currentPlayer])
                 fillCount = 0
                 score[currentPlayer] = score[currentPlayer] + tempScore
+                createTakeThePointsButton()
             end
         end
         if card.getName() == "Vengeance 2500" then
             findHighScorePlayer()
             score[highScorePlayer] = score[highScorePlayer] - 2500
-            vengeanceMessage = "Vengeance 2500! \n Highest Score Lost 2500"
+            vengeanceMessage = "Vengeance 2500! \n Subtracted 2500 from the Leader's Score"
             broadcastToAll(vengeanceMessage, colorIndex[currentPlayer])
             score[currentPlayer] = score[currentPlayer] + tempScore
         end
 
         fillMessage = "Temporary Score Subtotal: "..tempScore
         broadcastToAll(fillMessage, colorIndex[currentPlayer])
+
+        if card.getName() ~= "Double Trouble" then
+            createTakeThePointsButton()
+        end
+
+        if card.getName() ~= "Must Bust" then
+            if card.getName() ~= "Double Trouble" then
+                createTakeAChanceButton()
+            end
+        end
     end
 end
 
@@ -635,7 +683,7 @@ function moveScoredDice()
         scoredDiceCounter = scoredDiceCounter + 1
         if scoredDiceCounter == 6 then
             fill()
-            enableMustBustContinueButton()
+            mustBustFillReset()
         end
     end
     Wait.time(enableMoving, 3)
