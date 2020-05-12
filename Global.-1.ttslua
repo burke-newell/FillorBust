@@ -623,7 +623,9 @@ function checkBust()
         scoredDiceCounter = 0
         fillCount = 0
 
-        Wait.time(endTurn, 1)
+        endTurn()
+        Wait.time(enableScoring, 3)
+        return
     end
 end
 
