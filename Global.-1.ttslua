@@ -85,19 +85,15 @@ function onLoad()
 end
 
 function onUpdate()
-    UI.setValue("temporaryScore", "Temporary Score: "..tempScore)
+    findHighScorePlayer()
 
+    UI.setValue("temporaryScore", "Temporary Score: "..tempScore)
     UI.setValue("player1score", "White Score: "..score[1])
     UI.setValue("player2score", "Red Score: "..score[2])
     UI.setValue("player3score", "Yellow Score: "..score[3])
     UI.setValue("player4score", "Green Score: "..score[4])
-
-    findHighScorePlayer()
-    if highScorePlayer ~= nil then
-        UI.setValue("player5score", "Blue Score: "..highScorePlayer)
-    end
-
-    UI.setValue("player6score", "Pink Score: "..fillCount)
+    UI.setValue("player5score", "Blue Score: "..score[5])
+    UI.setValue("player6score", "Pink Score: "..score[6])
 end
 
 function onObjectRandomize(object, player_color)
