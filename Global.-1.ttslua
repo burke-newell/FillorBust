@@ -78,6 +78,8 @@ function onLoad()
 end
 
 function onUpdate()
+    UI.setValue("temporaryScore", "Temporary Score: "..tempScore)
+
     UI.setValue("player1score", "White Score: "..score[1])
     UI.setValue("player2score", "Red Score: "..score[2])
     UI.setValue("player3score", "Yellow Score: "..score[3])
@@ -102,7 +104,7 @@ function onObjectDrop(player_color, dropped_object)
         card = dropped_object
 
         checkNoDice()
-        checkVengeance2500()
+
 
         block.clearButtons()
         combinedButton_parameters.click_function = 'rollDiceButton'
@@ -135,6 +137,7 @@ end
 
 --START BUTTON SECTION--
 function drawButton()
+    scoredDiceCounter = 0
     checker.clearButtons()
     local deck = findDeckInZone(drawZone)
     if deck == nil then
@@ -155,7 +158,7 @@ function drawButton()
     card.setPositionSmooth(drop)
 
     checkNoDice()
-
+    checkVengeance2500()
 
     block.clearButtons()
     combinedButton_parameters.click_function = 'rollDiceButton'
@@ -163,9 +166,25 @@ function drawButton()
     block.createButton(combinedButton_parameters)
 end
 
+function checkVengeance2500()
+    if card.getName() == "Vengeance 2500" then
+        if score[currentPlayer] == highScorePlayer then
+            Wait.time(drawButton, 2)
+            skipVengeanceMessage = "Skipped Vengeance 2500"
+            broadcastToAll(skipVengeanceMessage, colorIndex[currentPlayer])
+            return
+        end
+        checker.clearButtons()
+        continueTurnButton_parameters.click_function = 'drawButton'
+        continueTurnButton_parameters.label = 'Optional \n Draw another Card'
+        checker.createButton(continueTurnButton_parameters)
+    end
+end
+
 function rollDiceButton()
     if allDiceResting() == true then
 
+        checker.clearButtons()
         clearDiceTables()
         assignPlayerColorToIndex(Turns.turn_color)
 
@@ -380,6 +399,8 @@ function scoreDice()
                             table.insert(scoredDice, sixes[1])
                             straightMessage = "STRAIGHT!"
                             broadcastToAll(straightMessage, colorIndex[currentPlayer])
+                            Wait.time(enableScoring, 3)
+                            return
                         end
                     end
                 end
@@ -544,6 +565,7 @@ function checkBust()
                 enableScoring()
 
                 checker.clearButtons()
+                block.clearButtons()
                 continueTurnButton_parameters.label = 'End Turn'
                 continueTurnButton_parameters.click_function = 'endTurn'
                 checker.createButton(continueTurnButton_parameters)
@@ -641,15 +663,13 @@ function fill()
         fillMessage = "Temporary Score Subtotal: "..tempScore
         broadcastToAll(fillMessage, colorIndex[currentPlayer])
 
-        if card.getName() ~= "Double Trouble" then
-            createTakeThePointsButton()
-        end
-
         if card.getName() ~= "Must Bust" then
             if card.getName() ~= "Double Trouble" then
+                createTakeThePointsButton()
                 createTakeAChanceButton()
             end
         end
+        
     end
 end
 
@@ -683,7 +703,7 @@ function moveScoredDice()
         scoredDiceCounter = scoredDiceCounter + 1
         if scoredDiceCounter == 6 then
             fill()
-            mustBustFillReset()
+            Wait.time(mustBustFillReset, i+1)
         end
     end
     Wait.time(enableMoving, 3)

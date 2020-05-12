@@ -8,6 +8,7 @@
     rectAlignment="MiddleRight"
 >
     <Text fontSize="50" color="red">Score Board</Text>
+    <Text id="temporaryScore" fontSize="35" color="white">Temporary Score</Text>
     <Text id="player1score" fontSize="25" color="white">placeholder</Text>
     <Text id="player2score" fontSize="25" color="red">placeholder</Text>
     <Text id="player3score" fontSize="25" color="yellow">placeholder</Text>
