@@ -258,10 +258,24 @@ function createTakeThePointsButton()
     checker.createButton(continueTurnButton_parameters)
 end
 
+function createEndTurnButton()
+    checker.clearButtons()
+    continueTurnButton_parameters.click_function = 'endTurn'
+    continueTurnButton_parameters.label = 'End Turn'
+    checker.createButton(continueTurnButton_parameters)
+end
+
 function createTakeAChanceButton()
         block.clearButtons()
         combinedButton_parameters.click_function = 'drawButton'
         combinedButton_parameters.label = 'Take a Chance \n & \n Draw a Card'
+        block.createButton(combinedButton_parameters)
+end
+
+function createDrawButton()
+        block.clearButtons()
+        combinedButton_parameters.click_function = 'drawButton'
+        combinedButton_parameters.label = 'Draw Card'
         block.createButton(combinedButton_parameters)
 end
 
@@ -555,27 +569,6 @@ function enableScoring()
     scoringEnabled = true
 end
 
-
-
-function broadcastMustBust()
-    if broadcastMustBustDebouncer ~= true then
-        return
-    end
-
-    broadcastMustBustDebouncer = false
-
-    mustBustMessage = "BUSTED!"
-    broadcastToAll(mustBustMessage, colorIndex[currentPlayer])
-
-    Wait.time(enableMustBustBroadcast, 3)
-end
-
-function enableMustBustBroadcast()
-    broadcastMustBustDebouncer = true
-end
-
-
-
 function broadcastTempScore()
     if broadcastTempScoreDebouncer ~= true then
         return
@@ -617,6 +610,23 @@ function checkBust()
     end
 end
 
+function broadcastMustBust()
+    if broadcastMustBustDebouncer ~= true then
+        return
+    end
+
+    broadcastMustBustDebouncer = false
+
+    mustBustMessage = "BUSTED! "..tempScore.." added to Score"
+    broadcastToAll(mustBustMessage, colorIndex[currentPlayer])
+
+    Wait.time(enableMustBustBroadcast, 3)
+end
+
+function enableMustBustBroadcast()
+    broadcastMustBustDebouncer = true
+end
+
 function checkFill()
     if scoredDiceCounter == 6 then
         if card.getName() ~= nil then
@@ -652,11 +662,11 @@ function checkFill()
                     score[currentPlayer] = score[currentPlayer] + tempScore
                     tempScore = 0
 
-                    doubleTroubleMessage = "Double Trouble Awarded!"
+                    doubleTroubleMessage = "Double Trouble Awarded! \n"..tempScore.." added to Score"
                     broadcastToAll(doubleTroubleMessage, colorIndex[currentPlayer])
 
-                    createTakeThePointsButton()
-                    createTakeAChanceButton()
+                    createEndTurnButton()
+                    createDrawButtion()
 
                     fillCount = 0
                 end
@@ -668,7 +678,7 @@ function checkFill()
                 score[currentPlayer] = score[currentPlayer] + tempScore
                 tempScore = 0
 
-                vengeanceMessage = "Vengeance 2500! \n Subtracted 2500 from the Leader's Score"
+                vengeanceMessage = "Vengeance 2500! Subtracted 2500 from the Leader's Score \n"..tempScore.." added to Score"
                 broadcastToAll(vengeanceMessage, colorIndex[currentPlayer])
 
                 fillCount = 0
