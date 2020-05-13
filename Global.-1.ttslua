@@ -560,7 +560,9 @@ function scoreDice()
         end
     end
 
-    broadcastTempScore()
+    if card.getName() ~= "Must Bust" then
+        broadcastTempScore()
+    end
 
     Wait.time(enableScoring, 3)
 end
@@ -696,7 +698,7 @@ function checkFill()
             fillMessage = "Temporary Score Subtotal: "..tempScore
             broadcastToAll(fillMessage, colorIndex[currentPlayer])
 
-            Wait.time(mustBustFillReset, i+1)
+            Wait.time(mustBustFillReset, 2)
             scoredDiceCounter = 0
         end
     end
