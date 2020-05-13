@@ -82,6 +82,35 @@ function onLoad()
     deck = findDeckInZone(drawZone)
     deck.shuffle()
 
+    ones = {}
+    twos = {}
+    threes = {}
+    fours = {}
+    fives = {}
+    sixes = {}
+
+    fillCount = 0
+    scoredDiceCounter = 0
+
+    scoredDice = {}
+
+    tempScore = 0
+    score = {}
+
+    score[1] = 0
+    score[2] = 0
+    score[3] = 0
+    score[4] = 0
+    score[5] = 0
+    score[6] = 0
+
+    scoringEnabled = true
+    movingEnabled = true
+    broadcastMustBustDebouncer = true
+    broadcastTempScoreDebouncer = true
+
+    colorIndex = {"White", "Red", "Yellow", "Green", "Blue", "Pink"}
+
 end
 
 function onUpdate()
@@ -260,21 +289,6 @@ function mustBustFillReset()
 end
 --END BUTTON SECTION--
 
-function endTurn()
-    Turns.turn_color = Turns.getNextTurnColor()
-end
-
-function checkNoDice()
-    if card.getName() == "No Dice" then
-        noDiceMessage = "NO DICE!"
-        broadcastToAll(noDiceMessage, colorIndex[currentPlayer])
-        tempScore = 0
-        endTurn()
-    end
-end
-
-colorIndex = {"White", "Red", "Yellow", "Green", "Blue", "Pink"}
-
 function assignPlayerColorToIndex(player_color)
     if player_color == "White" then
         currentPlayer = 1
@@ -296,30 +310,18 @@ function assignPlayerColorToIndex(player_color)
     end
 end
 
-ones = {}
-twos = {}
-threes = {}
-fours = {}
-fives = {}
-sixes = {}
+function endTurn()
+    Turns.turn_color = Turns.getNextTurnColor()
+end
 
-fillCount = 0
-scoredDiceCounter = 0
-
-scoredDice = {}
-
-tempScore = 0
-score = {}
-
-score[1] = 0
-score[2] = 0
-score[3] = 0
-score[4] = 0
-score[5] = 0
-score[6] = 0
-
-scoringEnabled = true
-movingEnabled = true
+function checkNoDice()
+    if card.getName() == "No Dice" then
+        noDiceMessage = "NO DICE!"
+        broadcastToAll(noDiceMessage, colorIndex[currentPlayer])
+        tempScore = 0
+        endTurn()
+    end
+end
 
 function clearDiceTables()
     for i in pairs (ones) do
@@ -563,7 +565,7 @@ function enableScoring()
     scoringEnabled = true
 end
 
-broadcastMustBustDebouncer = true
+
 
 function broadcastMustBust()
     if broadcastMustBustDebouncer ~= true then
@@ -582,7 +584,7 @@ function enableMustBustBroadcast()
     broadcastMustBustDebouncer = true
 end
 
-broadcastTempScoreDebouncer = true
+
 
 function broadcastTempScore()
     if broadcastTempScoreDebouncer ~= true then
@@ -657,6 +659,7 @@ function fill()
             if fillCount == 2 then
                 tempScore = tempScore * 2
                 score[currentPlayer] = score[currentPlayer] + tempScore
+                tempScore = 0
 
                 doubleTroubleMessage = "Double Trouble Awarded!"
                 broadcastToAll(doubleTroubleMessage, colorIndex[currentPlayer])
@@ -670,9 +673,13 @@ function fill()
         if card.getName() == "Vengeance 2500" then
             findHighScorePlayer()
             score[highScorePlayer] = score[highScorePlayer] - 2500
+
+            score[currentPlayer] = score[currentPlayer] + tempScore
+            tempScore = 0
+
             vengeanceMessage = "Vengeance 2500! \n Subtracted 2500 from the Leader's Score"
             broadcastToAll(vengeanceMessage, colorIndex[currentPlayer])
-            score[currentPlayer] = score[currentPlayer] + tempScore
+
             fillCount = 0
         end
 
@@ -720,6 +727,7 @@ function moveScoredDice()
         if scoredDiceCounter == 6 then
             fill()
             Wait.time(mustBustFillReset, i+1)
+            scoredDiceCounter = 0
         end
     end
     Wait.time(enableMoving, 3)
