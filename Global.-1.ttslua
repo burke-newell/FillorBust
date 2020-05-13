@@ -617,7 +617,7 @@ function broadcastMustBust()
 
     broadcastMustBustDebouncer = false
 
-    mustBustMessage = "BUSTED! "..tempScore.." added to Score"
+    mustBustMessage = "BUSTED! \n"..tempScore.." added to Score"
     broadcastToAll(mustBustMessage, colorIndex[currentPlayer])
 
     Wait.time(enableMustBustBroadcast, 3)
