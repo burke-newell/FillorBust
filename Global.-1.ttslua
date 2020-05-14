@@ -140,13 +140,13 @@ function onObjectDrop(player_color, dropped_object)
     if dropped_object.tag == "Card" then
         card = dropped_object
 
-        checkNoDice()
-
-
         block.clearButtons()
         combinedButton_parameters.click_function = 'rollDiceButton'
         combinedButton_parameters.label = 'Roll Dice'
         block.createButton(combinedButton_parameters)
+
+        checkNoDice()
+        checkVengeance2500()
     end
 end
 
@@ -194,13 +194,13 @@ function drawButton()
     card.setRotation({x=0 ,y=180, z=0})
     card.setPositionSmooth(drop)
 
-    checkNoDice()
-    checkVengeance2500()
-
     block.clearButtons()
     combinedButton_parameters.click_function = 'rollDiceButton'
     combinedButton_parameters.label = 'Roll Dice'
     block.createButton(combinedButton_parameters)
+
+    checkNoDice()
+    checkVengeance2500()
 end
 
 function checkVengeance2500()
