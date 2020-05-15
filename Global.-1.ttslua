@@ -44,9 +44,9 @@ continueTurnButton_parameters.function_owner = nil
 continueTurnButton_parameters.label = 'Continue Turn \n & \n Draw Another Card'
 continueTurnButton_parameters.position = {0,0.8,0}
 continueTurnButton_parameters.rotation = {0,0,0}
-continueTurnButton_parameters.width = 2000
-continueTurnButton_parameters.height = 800
-continueTurnButton_parameters.font_size = 200
+continueTurnButton_parameters.width = 2200
+continueTurnButton_parameters.height = 1000
+continueTurnButton_parameters.font_size = 300
 
 --START GLOBAL API EVENT SECTION--
 function onLoad()
@@ -110,24 +110,24 @@ function onLoad()
     broadcastTempScoreDebouncer = true
 
     colorIndex = {"White", "Red", "Yellow", "Green", "Blue", "Pink"}
-
+    currentPlayer = 1
 end
 
 function onUpdate()
     findHighScorePlayer()
 
-    UI.setValue("temporaryScore", "Temporary Score: "..tempScore)
-    UI.setValue("player1score", "White Score: "..score[1])
-    UI.setValue("player2score", "Red Score: "..score[2])
-    UI.setValue("player3score", "Yellow Score: "..score[3])
-    UI.setValue("player4score", "Green Score: "..score[4])
-    UI.setValue("player5score", "Blue Score: "..score[5])
-    UI.setValue("player6score", "Pink Score: "..score[6])
+    UI.setValue("temporaryScore", "Turn Score: "..tempScore)
+    UI.setValue("player1score", "White' Total Score: "..score[1])
+    UI.setValue("player2score", "Red's Total Score: "..score[2])
+    UI.setValue("player3score", "Yellow's Total Score: "..score[3])
+    UI.setValue("player4score", "Green's Total Score: "..score[4])
+    UI.setValue("player5score", "Blue's Total Score: "..score[5])
+    UI.setValue("player6score", "Pink's Total Score: "..score[6])
 end
 
 function onObjectRandomize(object, player_color)
     if object.tag == "Dice" then
-        assignPlayerColorToIndex(player_color)
+        --setCurrentPlayer(player_color)
         clearDiceTables()
         Wait.condition(
             function() return sortDie(object) end,
@@ -151,6 +151,7 @@ function onObjectDrop(player_color, dropped_object)
 end
 
 function onPlayerTurnStart(player_color_start, player_color_previous)
+    setCurrentPlayer(player_color_start)
     block.clearButtons()
     combinedButton_parameters.click_function = 'drawButton'
     combinedButton_parameters.label = 'Draw Card'
@@ -203,27 +204,12 @@ function drawButton()
     checkVengeance2500()
 end
 
-function checkVengeance2500()
-    if card.getName() == "Vengeance 2500" then
-        if currentPlayer == highScorePlayer then
-            Wait.time(drawButton, 2)
-            skipVengeanceMessage = "Skipped Vengeance 2500"
-            broadcastToAll(skipVengeanceMessage, colorIndex[currentPlayer])
-            return
-        end
-        checker.clearButtons()
-        continueTurnButton_parameters.click_function = 'drawButton'
-        continueTurnButton_parameters.label = 'Optional \n Draw another Card'
-        checker.createButton(continueTurnButton_parameters)
-    end
-end
-
 function rollDiceButton()
     if allDiceResting() == true then
 
         checker.clearButtons()
         clearDiceTables()
-        assignPlayerColorToIndex(Turns.turn_color)
+        --setCurrentPlayer(Turns.turn_color)
 
         if findDiceInZone(rollingZone) == nil then
             for i, die in ipairs(findDiceInZone(scoringZone)) do
@@ -293,7 +279,7 @@ function continueTurnButton()
 end
 --END BUTTON SECTION--
 
-function assignPlayerColorToIndex(player_color)
+function setCurrentPlayer(player_color)
     if player_color == "White" then
         currentPlayer = 1
     end
@@ -324,6 +310,21 @@ function checkNoDice()
         broadcastToAll(noDiceMessage, colorIndex[currentPlayer])
         tempScore = 0
         endTurn()
+    end
+end
+
+function checkVengeance2500()
+    if card.getName() == "Vengeance 2500" then
+        if currentPlayer == highScorePlayer then
+            Wait.time(drawButton, 2)
+            skipVengeanceMessage = "Skipped Vengeance 2500"
+            broadcastToAll(skipVengeanceMessage, colorIndex[currentPlayer])
+            return
+        end
+        checker.clearButtons()
+        continueTurnButton_parameters.click_function = 'drawButton'
+        continueTurnButton_parameters.label = 'Optional \n Draw another Card'
+        checker.createButton(continueTurnButton_parameters)
     end
 end
 
@@ -578,7 +579,7 @@ function broadcastTempScore()
 
     broadcastTempScoreDebouncer = false
 
-    tempScoreMessage = colorIndex[currentPlayer].." Temporary Score: "..tempScore
+    tempScoreMessage = colorIndex[currentPlayer].." Turn Score: "..tempScore
     broadcastToAll(tempScoreMessage, colorIndex[currentPlayer])
 
     Wait.time(enableBroadcastTempScoreDebouncer, 3)
@@ -678,11 +679,11 @@ function checkFill()
                 score[highScorePlayer] = score[highScorePlayer] - 2500
 
                 score[currentPlayer] = score[currentPlayer] + tempScore
-                tempScore = 0
 
-                vengeanceMessage = "Vengeance 2500! Subtracted 2500 from the Leader's Score \n"..tempScore.." added to Score"
+                vengeanceMessage = "Vengeance 2500! Subtracted 2500 from the Leader's Score \n"..tempScore.." added to "..colorIndex[currentPlayer].." Player's Score"
                 broadcastToAll(vengeanceMessage, colorIndex[currentPlayer])
 
+                tempScore = 0
                 fillCount = 0
             end
 
@@ -695,21 +696,10 @@ function checkFill()
                 end
             end
 
-            fillMessage = "Temporary Score Subtotal: "..tempScore
+            fillMessage = "Turn Score Subtotal: "..tempScore
             broadcastToAll(fillMessage, colorIndex[currentPlayer])
 
-            Wait.time(mustBustFillReset, 2)
             scoredDiceCounter = 0
-        end
-    end
-end
-
-function mustBustFillReset()
-    if card.getName() == "Must Bust" then
-        checker.clearButtons()
-        for i=1, 6 do
-            dice[i].setLock(false)
-            dice[i].setPosition({-3.5 + i, 0, 0})
         end
     end
 end
