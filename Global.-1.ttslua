@@ -117,12 +117,26 @@ function onUpdate()
     findHighScorePlayer()
 
     UI.setValue("turnScoreUI", "Turn Score: "..turnScore)
-    UI.setValue("player1score", "White's Total Score: "..score[1])
-    UI.setValue("player2score", "Red's Total Score: "..score[2])
-    UI.setValue("player3score", "Yellow's Total Score: "..score[3])
-    UI.setValue("player4score", "Green's Total Score: "..score[4])
-    UI.setValue("player5score", "Blue's Total Score: "..score[5])
-    UI.setValue("player6score", "Pink's Total Score: "..score[6])
+
+    if Player["White"].steam_name ~= nil then
+        UI.setValue("player1score", Player["White"].steam_name.."'s Total Score: "..score[1])
+    end
+    if Player["Red"].steam_name  ~= nil then
+        UI.setValue("player2score", Player["Red"].steam_name.."'s Total Score: "..score[2])
+    end
+    if Player["Yellow"].steam_name  ~= nil then
+        UI.setValue("player3score", Player["Yellow"].steam_name.."'s Total Score: "..score[3])
+    end
+    if Player["Green"].steam_name  ~= nil then
+        UI.setValue("player4score", Player["Green"].steam_name.."'s Total Score: "..score[4])
+    end
+    if Player["Blue"].steam_name  ~= nil then
+        UI.setValue("player5score", Player["Blue"].steam_name.."'s Total Score: "..score[5])
+    end
+    if Player["Pink"].steam_name  ~= nil then
+        UI.setValue("player6score", Player["Pink"].steam_name.."'s Total Score: "..score[6])
+    end
+
 end
 
 function onObjectRandomize(object, player_color)
