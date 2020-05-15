@@ -94,7 +94,7 @@ function onLoad()
 
     scoredDice = {}
 
-    tempScore = 0
+    turnScore = 0
     score = {}
 
     score[1] = 0
@@ -107,7 +107,7 @@ function onLoad()
     scoringEnabled = true
     movingEnabled = true
     broadcastMustBustDebouncer = true
-    broadcastTempScoreDebouncer = true
+    broadcastturnScoreDebouncer = true
 
     colorIndex = {"White", "Red", "Yellow", "Green", "Blue", "Pink"}
     currentPlayer = 1
@@ -116,8 +116,8 @@ end
 function onUpdate()
     findHighScorePlayer()
 
-    UI.setValue("temporaryScore", "Turn Score: "..tempScore)
-    UI.setValue("player1score", "White' Total Score: "..score[1])
+    UI.setValue("turnScoreUI", "Turn Score: "..turnScore)
+    UI.setValue("player1score", "White's Total Score: "..score[1])
     UI.setValue("player2score", "Red's Total Score: "..score[2])
     UI.setValue("player3score", "Yellow's Total Score: "..score[3])
     UI.setValue("player4score", "Green's Total Score: "..score[4])
@@ -127,7 +127,6 @@ end
 
 function onObjectRandomize(object, player_color)
     if object.tag == "Dice" then
-        --setCurrentPlayer(player_color)
         clearDiceTables()
         Wait.condition(
             function() return sortDie(object) end,
@@ -160,14 +159,14 @@ end
 
 function onPlayerTurnEnd(player_color_end, player_color_next)
     if score[currentPlayer] ~= nil then
-        score[currentPlayer] = score[currentPlayer] + tempScore
+        score[currentPlayer] = score[currentPlayer] + turnScore
     end
     for i=1, 6 do
         dice[i].setLock(false)
         dice[i].setPosition({-3.5 + i, 0, 0})
     end
     clearDiceTables()
-    tempScore = 0
+    turnScore = 0
     scoredDiceCounter = 0
     checker.clearButtons()
 end
@@ -209,7 +208,6 @@ function rollDiceButton()
 
         checker.clearButtons()
         clearDiceTables()
-        --setCurrentPlayer(Turns.turn_color)
 
         if findDiceInZone(rollingZone) == nil then
             for i, die in ipairs(findDiceInZone(scoringZone)) do
@@ -308,7 +306,7 @@ function checkNoDice()
     if card.getName() == "No Dice" then
         noDiceMessage = "NO DICE!"
         broadcastToAll(noDiceMessage, colorIndex[currentPlayer])
-        tempScore = 0
+        turnScore = 0
         endTurn()
     end
 end
@@ -405,7 +403,7 @@ function scoreDice()
                 if #fours == 1 then
                     if #fives == 1 then
                         if #sixes == 1 then
-                            tempScore = tempScore + 1500
+                            turnScore = turnScore + 1500
                             table.insert(scoredDice, ones[1])
                             table.insert(scoredDice, twos[1])
                             table.insert(scoredDice, threes[1])
@@ -424,126 +422,126 @@ function scoreDice()
     end
 
     if #ones == 6 then
-        tempScore = tempScore + 2000
+        turnScore = turnScore + 2000
         for i=1, 6 do
             table.insert(scoredDice, ones[i])
         end
     end
     if #ones == 5 then
-        tempScore = tempScore + 1200
+        turnScore = turnScore + 1200
         for i=1, 5 do
             table.insert(scoredDice, ones[i])
         end
     end
     if #ones == 4 then
-        tempScore = tempScore + 1100
+        turnScore = turnScore + 1100
         for i=1, 4 do
             table.insert(scoredDice, ones[i])
         end
     end
     if #ones == 3 then
-        tempScore = tempScore + 1000
+        turnScore = turnScore + 1000
         for i=1, 3 do
             table.insert(scoredDice, ones[i])
         end
     end
     if #ones == 2 then
-        tempScore = tempScore + 200
+        turnScore = turnScore + 200
         for i=1, 2 do
             table.insert(scoredDice, ones[i])
         end
     end
     if #ones == 1 then
-        tempScore = tempScore + 100
+        turnScore = turnScore + 100
         for i=1, 1 do
             table.insert(scoredDice, ones[i])
         end
     end
 
     if #twos == 6 then
-        tempScore = tempScore + 400
+        turnScore = turnScore + 400
         for i=1, 6 do
             table.insert(scoredDice, twos[i])
         end
     end
     if #twos >= 3 and #twos < 6 then
-        tempScore = tempScore + 200
+        turnScore = turnScore + 200
         for i=1, 3 do
             table.insert(scoredDice, twos[i])
         end
     end
 
     if #threes == 6 then
-        tempScore = tempScore + 600
+        turnScore = turnScore + 600
         for i=1, 6 do
             table.insert(scoredDice, threes[i])
         end
     end
     if #threes >= 3 and #threes < 6 then
-        tempScore = tempScore + 300
+        turnScore = turnScore + 300
         for i=1, 3 do
             table.insert(scoredDice, threes[i])
         end
     end
 
     if #fours == 6 then
-        tempScore = tempScore + 800
+        turnScore = turnScore + 800
         for i=1, 6 do
             table.insert(scoredDice, fours[i])
         end
     end
     if #fours >= 3 and #fours < 6 then
-        tempScore = tempScore + 400
+        turnScore = turnScore + 400
         for i=1, 3 do
             table.insert(scoredDice, fours[i])
         end
     end
 
     if #fives == 6 then
-        tempScore = tempScore + 1000
+        turnScore = turnScore + 1000
         for i=1, 6 do
             table.insert(scoredDice, fives[i])
         end
     end
     if fives == 5 then
-        tempScore = tempScore + 600
+        turnScore = turnScore + 600
         for i=1, 5 do
             table.insert(scoredDice, fives[i])
         end
     end
     if fives == 4 then
-        tempScore = tempScore + 550
+        turnScore = turnScore + 550
         for i=1, 4 do
             table.insert(scoredDice, fives[i])
         end
     end
     if #fives == 3 then
-        tempScore = tempScore + 500
+        turnScore = turnScore + 500
         for i=1, 3 do
             table.insert(scoredDice, fives[i])
         end
     end
     if #fives == 2 then
-        tempScore = tempScore + 100
+        turnScore = turnScore + 100
         for i=1, 2 do
             table.insert(scoredDice, fives[i])
         end
     end
     if #fives == 1 then
-        tempScore = tempScore + 50
+        turnScore = turnScore + 50
         for i=1, 1 do
             table.insert(scoredDice, fives[i])
         end
     end
 
     if #sixes == 6 then
-        tempScore = tempScore + 1200
+        turnScore = turnScore + 1200
         for i=1, 6 do
             table.insert(scoredDice, sixes[i])
         end
     end
     if #sixes >= 3 and #sixes < 6 then
-        tempScore = tempScore + 600
+        turnScore = turnScore + 600
         for i=1, 3 do
             table.insert(scoredDice, sixes[i])
         end
@@ -562,7 +560,7 @@ function scoreDice()
     end
 
     if card.getName() ~= "Must Bust" then
-        broadcastTempScore()
+        broadcastturnScore()
     end
 
     Wait.time(enableScoring, 3)
@@ -572,21 +570,21 @@ function enableScoring()
     scoringEnabled = true
 end
 
-function broadcastTempScore()
-    if broadcastTempScoreDebouncer ~= true then
+function broadcastturnScore()
+    if broadcastturnScoreDebouncer ~= true then
         return
     end
 
-    broadcastTempScoreDebouncer = false
+    broadcastturnScoreDebouncer = false
 
-    tempScoreMessage = colorIndex[currentPlayer].." Turn Score: "..tempScore
-    broadcastToAll(tempScoreMessage, colorIndex[currentPlayer])
+    turnScoreMessage = colorIndex[currentPlayer].." Turn Score: "..turnScore
+    broadcastToAll(turnScoreMessage, colorIndex[currentPlayer])
 
-    Wait.time(enableBroadcastTempScoreDebouncer, 3)
+    Wait.time(enableBroadcastturnScoreDebouncer, 3)
 end
 
-function enableBroadcastTempScoreDebouncer()
-    broadcastTempScoreDebouncer = true
+function enableBroadcastturnScoreDebouncer()
+    broadcastturnScoreDebouncer = true
 end
 
 function checkBust()
@@ -603,7 +601,7 @@ function checkBust()
         end
         bustMessage = "BUST!"
         broadcastToAll(bustMessage, colorIndex[currentPlayer])
-        tempScore = 0
+        turnScore = 0
         scoredDiceCounter = 0
         fillCount = 0
 
@@ -620,7 +618,7 @@ function broadcastMustBust()
 
     broadcastMustBustDebouncer = false
 
-    mustBustMessage = "BUSTED! \n"..tempScore.." added to Score"
+    mustBustMessage = "BUSTED! \n"..turnScore.." added to Score"
     broadcastToAll(mustBustMessage, colorIndex[currentPlayer])
 
     Wait.time(enableMustBustBroadcast, 3)
@@ -636,36 +634,36 @@ function checkFill()
             fillCount = fillCount + 1
 
             if card.getName() == "Bonus 300" then
-                tempScore = tempScore + 300
+                turnScore = turnScore + 300
                 bonus300Message = "Bonus 300 Awarded!"
                 broadcastToAll(bonus300Message, colorIndex[currentPlayer])
                 fillCount = 0
             end
             if card.getName() == "Bonus 400" then
-                tempScore = tempScore + 400
+                turnScore = turnScore + 400
                 bonus400Message = "Bonus 400 Awarded!"
                 broadcastToAll(bonus400Message, colorIndex[currentPlayer])
                 fillCount = 0
             end
             if card.getName() == "Bonus 500" then
-                tempScore = tempScore + 500
+                turnScore = turnScore + 500
                 bonus500Message = "Bonus 500 Awarded!"
                 broadcastToAll(bonus500Message, colorIndex[currentPlayer])
                 fillCount = 0
             end
             if card.getName() == "Fill 1000" then
-                tempScore = tempScore + 1000
+                turnScore = turnScore + 1000
                 fill1000Message = "Fill 1000 Awarded!"
                 broadcastToAll(fill1000Message, colorIndex[currentPlayer])
                 fillCount = 0
             end
             if card.getName() == "Double Trouble" then
                 if fillCount == 2 then
-                    tempScore = tempScore * 2
-                    score[currentPlayer] = score[currentPlayer] + tempScore
-                    tempScore = 0
+                    turnScore = turnScore * 2
+                    score[currentPlayer] = score[currentPlayer] + turnScore
+                    turnScore = 0
 
-                    doubleTroubleMessage = "Double Trouble Awarded! \n"..tempScore.." added to Score"
+                    doubleTroubleMessage = "Double Trouble Awarded! \n"..turnScore.." added to Score"
                     broadcastToAll(doubleTroubleMessage, colorIndex[currentPlayer])
 
                     createEndTurnButton()
@@ -678,12 +676,12 @@ function checkFill()
                 findHighScorePlayer()
                 score[highScorePlayer] = score[highScorePlayer] - 2500
 
-                score[currentPlayer] = score[currentPlayer] + tempScore
+                score[currentPlayer] = score[currentPlayer] + turnScore
 
-                vengeanceMessage = "Vengeance 2500! Subtracted 2500 from the Leader's Score \n"..tempScore.." added to "..colorIndex[currentPlayer].." Player's Score"
+                vengeanceMessage = "Vengeance 2500! Subtracted 2500 from the Leader's Score \n"..turnScore.." added to "..colorIndex[currentPlayer].." Player's Score"
                 broadcastToAll(vengeanceMessage, colorIndex[currentPlayer])
 
-                tempScore = 0
+                turnScore = 0
                 fillCount = 0
             end
 
@@ -696,7 +694,7 @@ function checkFill()
                 end
             end
 
-            fillMessage = "Turn Score Subtotal: "..tempScore
+            fillMessage = "Turn Score Subtotal: "..turnScore
             broadcastToAll(fillMessage, colorIndex[currentPlayer])
 
             scoredDiceCounter = 0
