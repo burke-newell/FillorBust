@@ -594,10 +594,10 @@ function broadcastturnScore()
     turnScoreMessage = colorIndex[currentPlayer].." Turn Score: "..turnScore
     broadcastToAll(turnScoreMessage, colorIndex[currentPlayer])
 
-    Wait.time(enableBroadcastturnScoreDebouncer, 3)
+    Wait.time(enableBroadcastTurnScoreDebouncer, 3)
 end
 
-function enableBroadcastturnScoreDebouncer()
+function enableBroadcastTurnScoreDebouncer()
     broadcastturnScoreDebouncer = true
 end
 
@@ -632,7 +632,7 @@ function broadcastMustBust()
 
     broadcastMustBustDebouncer = false
 
-    mustBustMessage = "BUSTED! \n"..turnScore.." added to Score"
+    mustBustMessage = "BUST! \n"..turnScore.." added to Score"
     broadcastToAll(mustBustMessage, colorIndex[currentPlayer])
 
     Wait.time(enableMustBustBroadcast, 3)
